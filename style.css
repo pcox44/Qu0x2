@@ -1,10 +1,12 @@
+/* Dark mode base */
 body {
-  font-family: sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #121212;
-  color: #f1f1f1;
-  text-align: center;
+  color: #eee;
   margin: 0;
   padding: 1rem;
+  text-align: center;
+  user-select: none;
 }
 
 h1, h2 {
@@ -12,71 +14,190 @@ h1, h2 {
 }
 
 #target {
-  font-size: 2rem;
+  font-size: 2.8rem;
   margin: 1rem 0;
+  font-weight: 700;
 }
 
 #dice-container {
   display: flex;
   justify-content: center;
   gap: 1rem;
-  margin: 1rem 0;
+  margin: 1rem 0 1.5rem;
 }
 
 .die {
-  width: 60px;
-  height: 60px;
-  font-size: 2rem;
+  width: 70px;
+  height: 70px;
+  font-size: 2.8rem;
+  font-weight: 700;
+  border-radius: 12px;
+  color: black;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 10px;
-  color: black;
-  font-weight: bold;
   cursor: pointer;
+  user-select: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  transition: transform 0.15s ease;
+}
+.die:hover:not(.used) {
+  transform: scale(1.1);
 }
 
 .die.used {
-  opacity: 0.4;
+  opacity: 0.35;
+  cursor: default;
+  transform: none !important;
+  box-shadow: none;
 }
 
+/* Horse racing colors for dice */
+.die[data-value="1"] { background-color: #d32f2f; color: white; } /* red */
+.die[data-value="2"] { background-color: #fafafa; color: black; border: 2px solid black; } /* white */
+.die[data-value="3"] { background-color: #1976d2; color: white; } /* blue */
+.die[data-value="4"] { background-color: #fbc02d; color: black; } /* yellow */
+.die[data-value="5"] { background-color: #388e3c; color: white; } /* green */
+.die[data-value="6"] { background-color: black; color: #fbc02d; } /* black with yellow number */
+
 #expression {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   margin: 1rem 0;
+  min-height: 2.5rem;
+  background-color: #222;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  user-select: text;
+  font-family: 'Consolas', monospace;
+  word-break: break-word;
+}
+
+#buttons {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
 }
 
 #buttons button {
-  font-size: 1.5rem;
-  margin: 0.2rem;
-  padding: 0.5rem 1rem;
+  font-size: 1.8rem;
+  padding: 1rem 0;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.4);
+  background-color: #333;
+  color: #eee;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+#buttons button:hover {
+  background-color: #555;
 }
 
-#result, #score, #streak {
-  margin-top: 1rem;
-  font-size: 1.2rem;
+button.number {
+  font-weight: 900;
+}
+
+button.operator {
+  background-color: #555;
+  color: #ddd;
+}
+
+#live-result {
+  font-size: 1.4rem;
+  margin: 0.4rem 0;
+  min-height: 1.5rem;
+  color: #8bc34a;
+  font-family: 'Consolas', monospace;
+}
+
+#score, #streak {
+  margin-top: 0.8rem;
+  font-size: 1.3rem;
+  font-weight: 600;
 }
 
 #results-table {
   margin: 1rem auto;
   border-collapse: collapse;
-  width: 90%;
+  width: 95%;
+  max-width: 700px;
   background-color: #1e1e1e;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 12px rgba(0,0,0,0.8);
 }
 
 #results-table th, #results-table td {
-  border: 1px solid #444;
-  padding: 0.5rem;
+  border-bottom: 1px solid #444;
+  padding: 0.6rem 1rem;
+  text-align: center;
+  font-family: 'Consolas', monospace;
+}
+
+#results-table th {
+  background-color: #333;
+  font-weight: 700;
+}
+
+#results-table tbody tr:hover {
+  background-color: #333;
+}
+
+#archive {
+  margin-top: 1rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  font-family: 'Consolas', monospace;
+  background-color: #1a1a1a;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.7);
+  max-height: 140px;
+  overflow-y: auto;
 }
 
 #toggle-dark {
   margin-top: 2rem;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 12px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+#toggle-dark:hover {
+  background-color: #388e3c;
 }
 
-/* Horse race dice colors */
-.die:nth-child(1) { background-color: red; color: white; }
-.die:nth-child(2) { background-color: white; color: black; border: 1px solid black; }
-.die:nth-child(3) { background-color: blue; color: white; }
-.die:nth-child(4) { background-color: yellow; color: black; }
-.die:nth-child(5) { background-color: green; color: white; }
-.die[value="6"] { background-color: black; color: yellow; }
+/* Dark mode toggle */
+body.dark {
+  background-color: #181818;
+  color: #ccc;
+}
+body.dark #buttons button {
+  background-color: #444;
+  color: #ddd;
+}
+body.dark #buttons button.operator {
+  background-color: #666;
+  color: #eee;
+}
+body.dark #results-table {
+  background-color: #222;
+  box-shadow: 0 0 15px #000;
+}
+body.dark #results-table th {
+  background-color: #444;
+}
+body.dark #results-table tbody tr:hover {
+  background-color: #555;
+}
