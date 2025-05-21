@@ -1,1 +1,50 @@
-https://pcox44.github.io/daily-dice-game/
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Dice Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>🎲 Daily Dice Game</h1>
+  <p class="rules">
+    Use each of the five dice exactly once, and any operations (+, −, ×, ÷, parentheses) as needed, to get as close as possible to the target number.
+    The closer you get, the better your score — a perfect match gives you a score of 0. You can play multiple times per day, but only perfect scores count
+    toward your streak. Dice must be separated by operations; you can't combine digits like 4 and 5 to make 45.
+  </p>
+
+  <label for="date-select">Select a Date: </label>
+  <input type="date" id="date-select" />
+
+  <div id="target"></div>
+  <div id="dice-container"></div>
+  <div id="expression"></div>
+  <div id="buttons">
+    <button onclick="addOp('+')">+</button>
+    <button onclick="addOp('-')">−</button>
+    <button onclick="addOp('*')">×</button>
+    <button onclick="addOp('/')">÷</button>
+    <button onclick="addOp('(')">(</button>
+    <button onclick="addOp(')')">)</button>
+    <button onclick="backspace()">←</button>
+    <button onclick="clearExpression()">Clear</button>
+    <button onclick="submitExpression()">Submit</button>
+  </div>
+
+  <div id="live-result"></div>
+  <div id="best-score"></div>
+  <div id="streak"></div>
+
+  <h2>Attempts Archive</h2>
+  <table id="results-table">
+    <thead>
+      <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
