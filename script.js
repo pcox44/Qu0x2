@@ -13,6 +13,15 @@ let target = 0;
 let todayKey = new Date().toISOString().slice(0, 10);
 let solutions = new Set();
 
+const dieStyles = {
+  1: ['red', 'white'],
+  2: ['white', 'black'],
+  3: ['blue', 'white'],
+  4: ['yellow', 'black'],
+  5: ['green', 'white'],
+  6: ['black', 'yellow']
+};
+
 function seedFromDate() {
   const now = new Date();
   now.setUTCHours(now.getUTCHours() - 4); // Eastern time
@@ -39,27 +48,14 @@ function render() {
   diceContainer.innerHTML = '';
   dice.forEach((value, i) => {
     const die = document.createElement('div');
-    die.className = 'die';
+    die.className = `die ${dieStyles[value][0]}`;
     die.textContent = value;
-
-    // Horse racing-style dice backgrounds
-    const styles = {
-      1: ['red', 'white'],
-      2: ['white', 'black'],
-      3: ['blue', 'white'],
-      4: ['yellow', 'black'],
-      5: ['green', 'white'],
-      6: ['black', 'yellow']
-    };
-    const [bg, color] = styles[value];
-    die.style.backgroundColor = bg;
-    die.style.color = color;
-
     if (usedDice[i]) die.classList.add('used');
     die.onclick = () => useDie(i);
     diceContainer.appendChild(die);
   });
-  expressionEl.textContent = expression;
+
+  expressionEl.innerHTML = formatExpression(expression);
 }
 
 function useDie(index) {
@@ -119,6 +115,17 @@ function submitExpression() {
   }
 }
 
+function formatExpression(expr) {
+  return expr.split('').map(ch => {
+    const num = parseInt(ch);
+    if (!isNaN(num) && num >= 1 && num <= 6) {
+      const [bg, fg] = dieStyles[num];
+      return `<span style="color:${bg}; font-weight:bold">${ch}</span>`;
+    }
+    return ch;
+  }).join('');
+}
+
 function updateStreak(archive) {
   let streak = 0;
   let date = new Date();
@@ -142,7 +149,6 @@ function displayArchive(archive) {
   }).join('<br>');
 }
 
-// Load archive and game
 const archive = JSON.parse(localStorage.getItem('ddg-archive') || '{}');
 if (archive[todayKey]?.solutions) {
   solutions = new Set(archive[todayKey].solutions);
