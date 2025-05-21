@@ -1,0 +1,92 @@
+/* style.css */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f2f2f2;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+h1 {
+  margin-top: 10px;
+  font-size: 2.5rem;
+  color: #444;
+}
+
+#target {
+  font-size: 1.5rem;
+  margin: 20px 0;
+}
+
+#dice-container {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.die {
+  width: 60px;
+  height: 60px;
+  font-size: 1.5rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s;
+}
+
+.die.used {
+  text-decoration: line-through;
+  opacity: 0.5;
+  cursor: default;
+}
+
+#buttons {
+  margin: 15px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+button {
+  padding: 10px 15px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  background: #444;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #000;
+}
+
+#expression, #result, #score, #streak {
+  margin-top: 10px;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+#archive {
+  margin-top: 20px;
+  max-width: 90%;
+  font-size: 0.9rem;
+  background: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
