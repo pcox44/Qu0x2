@@ -37,13 +37,12 @@ h1 {
   align-items: center;
   font-weight: bold;
   font-size: 24px;
-  color: white;
   user-select: none;
 }
 
 /* Horse racing dice colors */
 .die-1 {
-  background-color: #cc0000; /* red bg */
+  background-color: #cc0000; /* red */
   color: white;
 }
 .die-2 {
@@ -99,17 +98,14 @@ button:hover {
   background-color: #1565c0;
 }
 
-.result-message {
-  margin-top: 20px;
+.target-number,
+.result-message,
+.score-message,
+.streak-message {
+  margin-top: 15px;
   font-size: 18px;
-  min-height: 24px;
   color: #333;
-}
-
-.score-message {
-  margin-top: 10px;
-  font-size: 16px;
-  color: #555;
+  min-height: 24px;
 }
 
 .archive-section {
