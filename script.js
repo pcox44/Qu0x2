@@ -1,347 +1,301 @@
+const diceContainer = document.getElementById("dice-container");
+const expressionDiv = document.getElementById("expression");
+const liveResultDiv = document.getElementById("live-result");
+const scoreDisplay = document.getElementById("score-display");
+const resultsTableBody = document.querySelector("#results-table tbody");
+const archiveDiv = document.getElementById("archive");
+const targetDiv = document.getElementById("target");
+const buttonsDiv = document.getElementById("buttons");
+
+let dice = [];
+let target = 0;
+let expression = "";
+let submissions = [];
+let streak = 0;
+const maxArchiveDays = 30;
+
+// Horse race colors keyed by dice value for easy reference
 const diceColors = {
-  1: "number-1",
-  2: "number-2",
-  3: "number-3",
-  4: "number-4",
-  5: "number-5",
-  6: "number-6",
+  1: "#CC0000",
+  2: "#003399",
+  3: "#009933",
+  4: "#FFCC00",
+  5: "#660066",
+  6: "#FF6600"
 };
 
-const state = {
-  dice: [],
-  usedDiceIndices: new Set(),
-  expression: "",
-  archive: {},  // { 'YYYY-MM-DD': { target: number, attempts: [{expression, result, score}] } }
-  streak: 0,
-  streakLastDay: null,
-  target: 0,
-};
-
-function formatDate(date = new Date()) {
-  const options = { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" };
-  const parts = new Intl.DateTimeFormat("en-US", options).formatToParts(date);
-  const y = parts.find(p => p.type === "year").value;
-  const m = parts.find(p => p.type === "month").value;
-  const d = parts.find(p => p.type === "day").value;
-  return `${y}-${m}-${d}`;
-}
-
-function shuffleArray(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+// Generate dice and target for given date (seeded)
+function generateDiceAndTarget(date) {
+  // Simple seeded random for consistency per day
+  function seedRandom(seed) {
+    let x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
   }
-}
-
-function generateDice() {
-  const dice = [];
+  const seed = date.getFullYear() * 10000 + (date.getMonth()+1) * 100 + date.getDate();
+  dice = [];
   for (let i = 0; i < 5; i++) {
-    dice.push(Math.floor(Math.random() * 6) + 1);
+    const val = Math.floor(seedRandom(seed + i) * 6) + 1;
+    dice.push(val);
   }
-  return dice;
+  // Target from 50 to 250 (bigger range)
+  target = Math.floor(seedRandom(seed + 10) * 201) + 50;
+  targetDiv.textContent = `Target: ${target}`;
 }
 
-function generateTarget(dice, dateStr) {
-  let sum = 0;
-  for (let ch of dateStr) sum += ch.charCodeAt(0);
-  const diceSum = dice.reduce((a,b) => a+b, 0);
-  sum += diceSum * 7;
-  return (sum % 100) + 1;
-}
-
+// Render dice, black out used dice
 function renderDice() {
-  const diceContainer = document.getElementById("dice-container");
   diceContainer.innerHTML = "";
-
-  state.dice.forEach((value, idx) => {
-    const span = document.createElement("span");
-    span.classList.add("horse-race-die", diceColors[value]);
-    span.textContent = value;
-
-    if (state.usedDiceIndices.has(idx)) {
-      span.classList.add("used");
-      span.onclick = null;
-      span.title = "";
-    } else {
-      span.onclick = () => addDieToExpression(idx);
-      span.title = "Click to use this die";
+  const usedCounts = getUsedDiceCounts(expression);
+  dice.forEach((d,i) => {
+    const die = document.createElement("div");
+    die.className = "die";
+    die.textContent = d;
+    die.dataset.value = d;
+    die.style.color = diceColors[d];
+    // Black out if used up
+    if ((usedCounts[d] || 0) >= dice.filter(x => x===d).length) {
+      die.classList.add("used");
+      die.style.color = "white";
     }
-
-    diceContainer.appendChild(span);
+    die.addEventListener("click", () => {
+      if (!die.classList.contains("used")) addOp(d.toString());
+    });
+    diceContainer.appendChild(die);
   });
 }
 
-function canAddNumberToExpression() {
-  if (state.expression.length === 0) return true;
-  const lastChar = state.expression[state.expression.length - 1];
-  return !(/\d/.test(lastChar));
-}
-
-function addDieToExpression(dieIdx) {
-  if (state.usedDiceIndices.has(dieIdx)) return;
-  if (canAddNumberToExpression()) {
-    state.expression += state.dice[dieIdx];
-    state.usedDiceIndices.add(dieIdx);
-    renderDice();
-    updateExpressionAndResult();
-  }
-}
-
-function addOp(op) {
-  if (state.expression.length === 0) return;
-  const lastChar = state.expression[state.expression.length - 1];
-  if ("+-*/()".includes(lastChar)) return; // prevent consecutive operators
-  state.expression += op;
-  updateExpressionAndResult();
-}
-
-function backspace() {
-  if (state.expression.length === 0) return;
-  const lastChar = state.expression.slice(-1);
-  state.expression = state.expression.slice(0, -1);
-
-  // If last char was a digit, find which die it was and mark unused
-  if (/\d/.test(lastChar)) {
-    // Find the die index whose number matches and is currently used in expression once less
-    // Since dice can repeat numbers, we track usage count carefully
-
-    // Count dice numbers used currently in expression:
-    const usedNums = Array(5).fill(0);
-    for (let i = 0; i < state.expression.length; i++) {
-      const ch = state.expression[i];
-      if (/\d/.test(ch)) {
-        for (let di = 0; di < state.dice.length; di++) {
-          if (state.dice[di] === Number(ch)) usedNums[di]++;
-        }
-      }
+// Get counts of used dice digits in current expression
+function getUsedDiceCounts(expr) {
+  const counts = {};
+  for (let ch of expr) {
+    if ("123456".includes(ch)) {
+      counts[ch] = (counts[ch] || 0) + 1;
     }
-    // Reset usedDiceIndices based on counts:
-    state.usedDiceIndices.clear();
-    // We'll reassign dice used indices based on expression numbers (the first occurrence)
-    let exprNums = state.expression.match(/\d/g) || [];
-    const diceCopy = [...state.dice];
-    exprNums.forEach(n => {
-      for (let di = 0; di < diceCopy.length; di++) {
-        if (diceCopy[di] === Number(n)) {
-          state.usedDiceIndices.add(di);
-          diceCopy[di] = null; // so we don't use same die twice
-          break;
-        }
-      }
-    });
   }
-  renderDice();
-  updateExpressionAndResult();
+  return counts;
 }
 
+// Add operation or digit to expression
+function addOp(op) {
+  expression += op;
+  updateExpression();
+}
+
+// Backspace last character
+function backspace() {
+  expression = expression.slice(0, -1);
+  updateExpression();
+}
+
+// Clear expression
 function clearExpression() {
-  state.expression = "";
-  state.usedDiceIndices.clear();
-  renderDice();
-  updateExpressionAndResult();
+  expression = "";
+  updateExpression();
+  liveResultDiv.textContent = "";
+  scoreDisplay.textContent = "";
 }
 
-function safeEval(expr) {
+// Try evaluate expression safely
+function tryEvaluate(expr) {
+  // Only allow numbers, + - * / () spaces
+  if (!/^[0-9+\-*/()\s]+$/.test(expr)) return null;
+  // Check dice counts not exceeded
+  const counts = getUsedDiceCounts(expr);
+  for (let d in counts) {
+    const countInDice = dice.filter(x => x === Number(d)).length;
+    if (counts[d] > countInDice) return null;
+  }
   try {
-    // Only allow digits, operators, and parentheses
-    if (!/^[\d+\-*/()\s]+$/.test(expr)) return null;
-    // Disallow consecutive numbers without operator: We check in submit, so we can skip here
-    const val = eval(expr);
-    if (typeof val !== "number" || !isFinite(val)) return null;
-    return val;
+    // eslint-disable-next-line no-eval
+    let val = eval(expr);
+    if (typeof val === "number" && isFinite(val)) {
+      return val;
+    }
   } catch {
     return null;
   }
+  return null;
 }
 
-function updateExpressionAndResult() {
-  const exprEl = document.getElementById("expression");
-  exprEl.value = state.expression || "";
-
-  if (state.expression.length === 0) {
-    updateLiveResult("-");
-    updateScoreDisplay("-");
-    return;
-  }
-
-  const val = safeEval(state.expression);
+// Update expression display, live result, and dice blackening
+function updateExpression() {
+  expressionDiv.textContent = expression;
+  const val = tryEvaluate(expression);
   if (val === null) {
-    updateLiveResult("Invalid");
-    updateScoreDisplay("-");
-    return;
-  }
-
-  updateLiveResult(val);
-  updateScoreDisplay(Math.abs(val - state.target));
-}
-
-function updateLiveResult(val) {
-  const liveResultEl = document.getElementById("live-result");
-  if (typeof val === "number") {
-    liveResultEl.textContent = `Result: ${Math.round(val)}`;
+    liveResultDiv.textContent = "Invalid expression";
+    liveResultDiv.style.color = "red";
+    scoreDisplay.textContent = "";
   } else {
-    liveResultEl.textContent = `Result: ${val}`;
+    liveResultDiv.textContent = `Result: ${val.toFixed(4)}`;
+    liveResultDiv.style.color = "#333";
+    const diff = Math.abs(val - target);
+    scoreDisplay.textContent = `Score (difference): ${diff.toFixed(4)}`;
+    scoreDisplay.style.color = diff === 0 ? "green" : "#004488";
   }
-}
-
-function updateScoreDisplay(score) {
-  const scoreEl = document.getElementById("score-display");
-  if (typeof score === "number") {
-    scoreEl.textContent = `Score: ${Math.round(score)}`;
-  } else {
-    scoreEl.textContent = `Score: ${score}`;
-  }
-}
-
-function submitExpression() {
-  if (state.expression.length === 0) return alert("Enter an expression first!");
-
-  // Check if all dice used exactly once
-  if (state.usedDiceIndices.size !== state.dice.length) {
-    return alert("You must use each die exactly once!");
-  }
-
-  // Check if expression is valid and has operators between numbers (no concatenation)
-  if (!isValidExpression(state.expression)) {
-    return alert("Invalid expression! You cannot combine dice digits directly without operator or parenthesis.");
-  }
-
-  const result = safeEval(state.expression);
-  if (result === null) return alert("Invalid expression.");
-
-  const roundedResult = Math.round(result);
-  const score = Math.abs(roundedResult - state.target);
-
-  const today = formatDate();
-  if (!state.archive[today]) {
-    state.archive[today] = { target: state.target, attempts: [] };
-  }
-  state.archive[today].attempts.push({
-    expression: state.expression,
-    result: roundedResult,
-    score,
-  });
-
-  // Update streak logic
-  if (score === 0) {
-    const lastDay = state.streakLastDay;
-    const todayDate = new Date(today);
-    const yesterdayDate = new Date(todayDate);
-    yesterdayDate.setDate(todayDate.getDate() - 1);
-
-    if (lastDay === formatDate(yesterdayDate)) {
-      state.streak++;
-    } else if (lastDay !== today) {
-      state.streak = 1;
-    }
-    state.streakLastDay = today;
-  }
-
-  clearExpression();
-  saveState();
-  renderArchive();
-  updateStreakDisplay();
-}
-
-function isValidExpression(expr) {
-  // Disallow any two digits adjacent without operator or parenthesis between
-  // For example "45" not allowed if 4 and 5 are separate dice
-  // We can check if the expression contains any 2+ digit numbers by regex
-
-  // Remove spaces just in case
-  const noSpaces = expr.replace(/\s+/g, "");
-
-  // Find all numbers (sequence of digits)
-  const numbers = noSpaces.match(/\d+/g) || [];
-  for (const numStr of numbers) {
-    if (numStr.length > 1) {
-      // More than one digit together — invalid
-      return false;
-    }
-  }
-  return true;
-}
-
-function renderArchive() {
-  const archiveEl = document.getElementById("archive");
-  archiveEl.innerHTML = "";
-
-  const today = formatDate();
-  if (!state.archive[today]) {
-    archiveEl.textContent = "No attempts yet today.";
-    return;
-  }
-
-  const dayData = state.archive[today];
-  const header = document.createElement("div");
-  header.innerHTML = `<strong>Target: ${dayData.target}</strong>`;
-  archiveEl.appendChild(header);
-
-  // List attempts
-  dayData.attempts.forEach(({ expression, result, score }, i) => {
-    const div = document.createElement("div");
-    div.classList.add("archive-attempt");
-    div.textContent = `${expression} = ${result} (score: ${score})`;
-    if (score === 0) {
-      div.classList.add("archive-perfect");
-    }
-    archiveEl.appendChild(div);
-  });
-}
-
-function updateStreakDisplay() {
-  const streakEl = document.getElementById("streak");
-  streakEl.textContent = `Current Streak: ${state.streak}`;
-}
-
-function saveState() {
-  localStorage.setItem(
-    "dailyDiceGameState",
-    JSON.stringify({
-      archive: state.archive,
-      streak: state.streak,
-      streakLastDay: state.streakLastDay,
-      dice: state.dice,
-      target: state.target,
-    })
-  );
-}
-
-function loadState() {
-  const saved = localStorage.getItem("dailyDiceGameState");
-  if (saved) {
-    const obj = JSON.parse(saved);
-    state.archive = obj.archive || {};
-    state.streak = obj.streak || 0;
-    state.streakLastDay = obj.streakLastDay || null;
-    state.dice = obj.dice || generateDice();
-    state.target = obj.target || generateTarget(state.dice, formatDate());
-  } else {
-    state.dice = generateDice();
-    state.target = generateTarget(state.dice, formatDate());
-  }
-}
-
-function initGame() {
-  loadState();
-
-  // Set target number
-  document.getElementById("target-number").textContent = state.target;
-
   renderDice();
-  updateExpressionAndResult();
-  renderArchive();
-  updateStreakDisplay();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  initGame();
+// Check if expressions are mathematically equivalent ignoring commutativity of + and *
+function canonicalForm(expr) {
+  // Remove spaces
+  expr = expr.replace(/\s+/g, "");
 
-  document.getElementById("btn-submit").onclick = submitExpression;
-  document.getElementById("btn-clear").onclick = clearExpression;
-  document.getElementById("btn-backspace").onclick = backspace;
+  // A naive way: parse and sort add and multiply operands, but to keep it simple:
+  // We'll just normalize + and * operands sorted alphabetically in a very simple way.
+  // This is a very rough approximation to avoid duplicates like 3+5 and 5+3.
+  // For better solution, you'd use a math parser library.
 
-  document.querySelectorAll(".btn-op").forEach((button) => {
-    button.onclick = () => addOp(button.textContent);
+  try {
+    // Replace all "-" with "+-" for split
+    // Handle only + at top level, split by top-level +, then sort operands alphabetically
+    let stack = [];
+    let parts = [];
+    let lastIndex = 0;
+    for (let i = 0; i < expr.length; i++) {
+      let c = expr[i];
+      if (c === '(') stack.push('(');
+      else if (c === ')') stack.pop();
+      else if (c === '+' && stack.length === 0) {
+        parts.push(expr.slice(lastIndex, i));
+        lastIndex = i + 1;
+      }
+    }
+    parts.push(expr.slice(lastIndex));
+    parts = parts.map(p => p.trim()).filter(p => p !== "");
+    parts.sort();
+
+    return parts.join("+");
+  } catch {
+    return expr;
+  }
+}
+
+// Submit current expression
+function submitExpression() {
+  const val = tryEvaluate(expression);
+  if (val === null) {
+    alert("Invalid expression or uses dice too many times.");
+    return;
+  }
+  const diff = Math.abs(val - target);
+  const cform = canonicalForm(expression);
+
+  // Check if duplicate solution for today
+  if (submissions.some(s => s.canonical === cform)) {
+    alert("You already submitted this solution!");
+    return;
+  }
+
+  submissions.push({ expr: expression, result: val, diff, canonical: cform });
+
+  if (diff === 0) {
+    streak++;
+  } else {
+    streak = 0;
+  }
+  saveData();
+  renderResults();
+  renderArchive();
+  clearExpression();
+}
+
+// Render submissions table
+function renderResults() {
+  resultsTableBody.innerHTML = "";
+  submissions.forEach((s, i) => {
+    const tr = document.createElement("tr");
+    const idxTd = document.createElement("td");
+    idxTd.textContent = i + 1;
+    const exprTd = document.createElement("td");
+    exprTd.textContent = s.expr;
+    const resTd = document.createElement("td");
+    resTd.textContent = s.result.toFixed(4);
+    const scoreTd = document.createElement("td");
+    scoreTd.textContent = s.diff.toFixed(4);
+    tr.appendChild(idxTd);
+    tr.appendChild(exprTd);
+    tr.appendChild(resTd);
+    tr.appendChild(scoreTd);
+    resultsTableBody.appendChild(tr);
   });
-});
+}
+
+// Save data (submissions, streak, archive) to localStorage by date
+function saveData() {
+  const todayStr = getTodayStr();
+  localStorage.setItem("daily-dice-submissions-" + todayStr, JSON.stringify(submissions));
+  localStorage.setItem("daily-dice-streak", streak);
+  updateArchive(todayStr, submissions);
+}
+
+// Load data for today from localStorage
+function loadData() {
+  const todayStr = getTodayStr();
+  const subData = localStorage.getItem("daily-dice-submissions-" + todayStr);
+  submissions = subData ? JSON.parse(subData) : [];
+  streak = Number(localStorage.getItem("daily-dice-streak") || "0");
+}
+
+// Get date as YYYY-MM-DD string
+function getTodayStr() {
+  const d = new Date();
+  return d.toISOString().slice(0, 10);
+}
+
+// Archive data structure keyed by date
+let archiveData = {};
+
+// Update archive data with today's submissions
+function updateArchive(dateStr, submissions) {
+  archiveData[dateStr] = submissions;
+  // Save only last 30 days in archiveData
+  const keys = Object.keys(archiveData).sort().slice(-maxArchiveDays);
+  const newArchive = {};
+  keys.forEach(k => {
+    newArchive[k] = archiveData[k];
+  });
+  archiveData = newArchive;
+  localStorage.setItem("daily-dice-archive", JSON.stringify(archiveData));
+}
+
+// Load archive from localStorage
+function loadArchive() {
+  const arch = localStorage.getItem("daily-dice-archive");
+  archiveData = arch ? JSON.parse(arch) : {};
+}
+
+// Render archive nicely with checkmarks and count of unique solutions
+function renderArchive() {
+  archiveDiv.innerHTML = "";
+  const keys = Object.keys(archiveData).sort().reverse().slice(0, maxArchiveDays);
+  if (keys.length === 0) {
+    archiveDiv.textContent = "No archive data yet.";
+    return;
+  }
+  keys.forEach(day => {
+    const div = document.createElement("div");
+    div.className = "day";
+    const subm = archiveData[day] || [];
+    const perfectCount = subm.filter(s => s.diff === 0).length;
+    const uniqueCount = subm.length;
+    div.innerHTML = `<strong>${day}</strong>: ${uniqueCount} solution${uniqueCount !== 1 ? 's' : ''}`;
+    if (perfectCount > 0) {
+      div.innerHTML += ` <span class="perfect">Perfect! &#10003;</span>`;
+      div.innerHTML += ` (${perfectCount} perfect solution${perfectCount !== 1 ? 's' : ''})`;
+    }
+    archiveDiv.appendChild(div);
+  });
+}
+
+// Initialize
+function init() {
+  generateDiceAndTarget(new Date());
+  loadData();
+  loadArchive();
+  renderDice();
+  renderResults();
+  renderArchive();
+  updateExpression();
+}
+
+init();
