@@ -1,1 +1,54 @@
-https://pcox44.github.io/daily-dice-game/
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily Dice Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Daily Dice Game</h1>
+  <p class="rules">
+    Use the five dice values exactly once with +, -, ×, ÷, parentheses to get as close as possible to the target number.<br />
+    You can submit unlimited attempts. Perfect match = score 0.<br />
+    Dice and target reset at midnight Eastern Time (UTC-5).
+  </p>
+
+  <div id="dice-container"></div>
+
+  <div>
+    <strong>Target Number: </strong><span id="target-number"></span>
+  </div>
+
+  <div id="expression-container">
+    <input id="expression" type="text" readonly />
+  </div>
+
+  <div id="buttons">
+    <div id="dice-buttons"></div>
+    <div id="op-buttons">
+      <button class="btn-op">(</button>
+      <button class="btn-op">)</button>
+      <button class="btn-op">+</button>
+      <button class="btn-op">-</button>
+      <button class="btn-op">×</button>
+      <button class="btn-op">÷</button>
+    </div>
+    <button id="btn-backspace">Backspace</button>
+    <button id="btn-clear">Clear</button>
+    <button id="btn-submit">Submit</button>
+  </div>
+
+  <div>
+    <h2>Attempts</h2>
+    <div id="attempts-list"></div>
+    <div id="perfect-count"></div>
+  </div>
+
+  <div>
+    <h2 id="streak"></h2>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
