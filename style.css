@@ -1,146 +1,138 @@
 body {
   font-family: Arial, sans-serif;
-  max-width: 600px;
-  margin: 20px auto;
-  padding: 0 20px;
-  background-color: #f5f5f5;
-  color: #222;
+  background-color: #f4f7f8;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  max-width: 500px;
+  width: 100%;
+  background: white;
+  padding: 20px 30px 30px 30px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
   text-align: center;
 }
 
 h1 {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
-#target {
-  font-size: 1.5em;
-  margin-bottom: 10px;
+.dice-container {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
 }
 
-#dice-container {
-  margin: 10px 0 20px 0;
-}
-
-.dice {
-  display: inline-block;
+.die {
   width: 50px;
   height: 50px;
-  line-height: 50px;
-  margin: 5px;
-  font-size: 1.8em;
-  font-weight: bold;
-  color: white;
   border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 24px;
+  color: white;
   user-select: none;
-  cursor: pointer;
-  border: 2px solid #444;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  transition: transform 0.15s ease;
 }
 
-.dice.used {
-  opacity: 0.4;
-  cursor: default;
-  box-shadow: none;
-  border-color: #999;
+/* Horse racing dice colors */
+.die-1 {
+  background-color: #cc0000; /* red bg */
+  color: white;
+}
+.die-2 {
+  background-color: white;
+  color: black;
+  border: 1px solid #ccc;
+}
+.die-3 {
+  background-color: #003399; /* blue */
+  color: white;
+}
+.die-4 {
+  background-color: #ffeb3b; /* yellow */
+  color: black;
+}
+.die-5 {
+  background-color: #388e3c; /* green */
+  color: white;
+}
+.die-6 {
+  background-color: black;
+  color: #ffeb3b; /* yellow text */
 }
 
-.dice.red {
-  background-color: #d70000; /* horse racing red */
+.input-container {
+  margin-top: 20px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-.dice.white {
-  background-color: #ffffff;
-  color: #000;
-  border: 2px solid #444;
-}
-
-.dice.blue {
-  background-color: #0033a0; /* horse racing blue */
-}
-
-.dice.yellow {
-  background-color: #ffde17; /* horse racing yellow */
-  color: #000;
-}
-
-.dice.green {
-  background-color: #007a33; /* horse racing green */
-}
-
-.dice.black {
-  background-color: #000000;
-  color: #ffde17; /* yellow number */
-}
-
-#expression {
-  min-height: 2em;
-  font-size: 1.4em;
-  margin-bottom: 15px;
-  background: white;
+#answer-input {
+  font-size: 18px;
+  padding: 8px;
+  width: 180px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  padding: 6px 10px;
-  user-select: text;
-  word-break: break-word;
-  text-align: center;
 }
 
-#buttons {
-  margin-bottom: 15px;
-}
-
-#buttons button {
-  font-size: 1.2em;
-  margin: 4px;
-  padding: 8px 14px;
+button {
+  font-size: 16px;
+  padding: 8px 12px;
+  border: none;
   border-radius: 6px;
-  border: 1.5px solid #666;
-  background-color: #eee;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  background-color: #1976d2;
+  color: white;
+  transition: background-color 0.3s ease;
 }
 
-#buttons button:hover:not(:disabled) {
-  background-color: #ccc;
+button:hover {
+  background-color: #1565c0;
 }
 
-#buttons button:disabled {
-  opacity: 0.5;
-  cursor: default;
+.result-message {
+  margin-top: 20px;
+  font-size: 18px;
+  min-height: 24px;
+  color: #333;
 }
 
-#result {
-  font-size: 1.3em;
-  margin-bottom: 5px;
+.score-message {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #555;
 }
 
-#score {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-#streak {
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-#archive {
+.archive-section {
+  margin-top: 40px;
   text-align: left;
-  max-height: 220px;
+}
+
+#archive-list {
+  list-style-type: none;
+  padding-left: 0;
+  max-height: 200px;
   overflow-y: auto;
-  background: #fff;
-  border: 1px solid #ddd;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 0.9em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fafafa;
 }
 
-#archive ul {
-  padding-left: 20px;
-  margin: 5px 0 0 0;
+#archive-list li {
+  padding: 6px 12px;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
 }
 
-#archive li {
-  margin-bottom: 4px;
+#archive-list li:last-child {
+  border-bottom: none;
 }
