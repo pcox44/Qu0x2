@@ -1,1 +1,46 @@
-https://pcox44.github.io/daily-dice-game/
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Dice Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>🎲 Daily Dice Game</h1>
+  <p class="rules">
+    Use all five dice exactly once with any operations and parentheses to get as close as possible to the target number (1–100). 
+    Dice values must be separated by an operator or parentheses (no concatenating like 4 and 5 to make 45). 
+    The closer your result to the target, the better your score! A score of 0 is a perfect solution. 
+    Only perfect solutions count toward your daily solution total and streak.
+  </p>
+  <div id="game-meta">
+    <label for="game-select">Select Game:</label>
+    <select id="game-select"></select>
+    <span id="game-number"></span>
+  </div>
+  <div id="target-box">🎯 Target: <span id="target"></span></div>
+  <div id="dice-container"></div>
+  <div id="expression-box">
+    <div id="expression"></div>
+    <div id="live-result"></div>
+  </div>
+  <div id="buttons">
+    <button onclick="addOp('+')">+</button>
+    <button onclick="addOp('-')">−</button>
+    <button onclick="addOp('*')">×</button>
+    <button onclick="addOp('/')">÷</button>
+    <button onclick="addOp('(')">(</button>
+    <button onclick="addOp(')')">)</button>
+    <button onclick="backspace()">←</button>
+    <button onclick="clearExpression()">Clear</button>
+    <button onclick="submitExpression()">Submit</button>
+  </div>
+  <div id="score-box">Best Score Today: <span id="best-score">–</span></div>
+  <div id="perfect-count">Perfect Solutions Today: <span id="perfects">0</span></div>
+  <div id="streak-box">🔥 Current Streak: <span id="streak">0</span></div>
+  <h2>Archive</h2>
+  <div id="archive"></div>
+  <script src="script.js"></script>
+</body>
+</html>
