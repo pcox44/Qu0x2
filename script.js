@@ -18,7 +18,7 @@ const diceCount = 5;
 let diceValues = [];
 let targetNumber = 0;
 
-// --- DOM Elements ---
+// DOM Elements
 const diceContainer = document.getElementById('dice-container');
 const answerInput = document.getElementById('answer-input');
 const backspaceBtn = document.getElementById('backspace-btn');
@@ -26,8 +26,11 @@ const clearBtn = document.getElementById('clear-btn');
 const submitBtn = document.getElementById('submit-btn');
 const resultMessage = document.getElementById('result-message');
 const scoreMessage = document.getElementById('score-message');
+const streakMessage = document.getElementById('streak-message');
 const archiveList = document.getElementById('archive-list');
+const targetDisplay = document.getElementById('target-number');
 
+let streak = 0;
 
 // --- Generate dice values (random 1-6, 5 dice) ---
 function generateDice() {
@@ -51,6 +54,11 @@ function displayDice() {
     dieDiv.textContent = d;
     diceContainer.appendChild(dieDiv);
   }
+}
+
+// --- Display target number ---
+function displayTarget() {
+  targetDisplay.textContent = `Target Number: ${targetNumber}`;
 }
 
 // --- Validate input uses all dice once ---
@@ -119,66 +127,103 @@ function loadArchive() {
   const progress = JSON.parse(localStorage.getItem('dailyDiceGameProgress') || '{}');
 
   // Sort dates descending
-  const dates = Object.keys(progress).sort((a,b) => (a > b ? -1 : 1));
+  const dates = Object.keys(progress).sort((a, b) => (a > b ? -1 : 1));
 
-  for (let date of dates) {
-    const entry = progress[date];
-    let li = document.createElement('li');
-    li.textContent = `${date} — Dice: [${entry.dice.join(', ')}], Target: ${entry.target}, Your Answer: ${entry.answer}, Score: ${entry.score}`;
+  for (let dateStr of dates) {
+    const game = progress[dateStr];
+    const li = document.createElement('li');
+    li.textContent = `${dateStr}: Score ${game.score} — Answer: ${game.answer || '(none)'}`;
     archiveList.appendChild(li);
   }
 }
 
-// --- Seed past 30 days archive with fake data ---
-function seedArchive() {
-  let progress = JSON.parse(localStorage.getItem('dailyDiceGameProgress') || '{}');
-  if (Object.keys(progress).length >= 30) return; // Already seeded
-
-  for (let i = 1; i <= 30; i++) {
-    let date = new Date();
-    date.setDate(date.getDate() - i);
-    let dateStr = formatDate(date);
-
-    // Generate fake dice and target
-    let dice = [];
-    for (let j = 0; j < diceCount; j++) dice.push(Math.floor(Math.random() * 6) + 1);
-    let target = Math.floor(Math.random() * 100) + 1;
-
-    // Fake answer and score (random within +/- 20 of target)
-    let fakeAnswer = target + (Math.floor(Math.random() * 41) - 20);
-    if (fakeAnswer < 1) fakeAnswer = 1;
-
-    let score = Math.abs(fakeAnswer - target);
-
-    progress[dateStr] = { dice, target, answer: fakeAnswer.toString(), score };
+// --- Load streak from localStorage ---
+function loadStreak() {
+  const stored = localStorage.getItem('dailyDiceGameStreak');
+  if (stored) {
+    streak = parseInt(stored, 10);
+  } else {
+    streak = 0;
   }
-  localStorage.setItem('dailyDiceGameProgress', JSON.stringify(progress));
+  updateStreakDisplay();
 }
 
-// --- Initialize game for today ---
+// --- Save streak ---
+function saveStreak() {
+  localStorage.setItem('dailyDiceGameStreak', streak.toString());
+}
+
+// --- Update streak display ---
+function updateStreakDisplay() {
+  streakMessage.textContent = `Current Perfect Streak: ${streak}`;
+}
+
+// --- Initialize a new game for today ---
 function initGame() {
-  const todayStr = formatDate(new Date());
+  // Check if saved game for today exists, else generate new
+  const today = formatDate(new Date());
   const progress = JSON.parse(localStorage.getItem('dailyDiceGameProgress') || '{}');
 
-  // If today’s game exists, load it, else create new
-  if (progress[todayStr]) {
-    diceValues = progress[todayStr].dice;
-    targetNumber = progress[todayStr].target;
+  if (progress[today]) {
+    diceValues = progress[today].dice;
+    targetNumber = progress[today].target;
   } else {
     generateDice();
     generateTarget();
-    // Save immediately
-    saveProgress(todayStr, diceValues, targetNumber, '', null);
   }
 
   displayDice();
-  answerInput.value = '';
+  displayTarget();
   resultMessage.textContent = '';
-  scoreMessage.textContent = `Target Number: ${targetNumber}`;
+  scoreMessage.textContent = '';
+  answerInput.value = '';
+  updateStreakDisplay();
   loadArchive();
 }
 
-// --- Event listeners ---
+// --- Validate and submit answer ---
+function submitAnswer() {
+  const input = answerInput.value.trim();
+  if (!input) {
+    resultMessage.textContent = 'Please enter an expression.';
+    return;
+  }
+
+  // Check dice usage
+  if (!usesAllDiceOnce(input)) {
+    resultMessage.textContent = 'Your expression must use all dice values exactly once.';
+    return;
+  }
+
+  // Evaluate expression
+  const val = evaluateExpression(input);
+  if (val === null) {
+    resultMessage.textContent = 'Invalid expression.';
+    return;
+  }
+
+  // Compute score
+  const score = computeScore(val);
+  scoreMessage.textContent = `Your result: ${val.toFixed(2)}, Target: ${targetNumber}, Score: ${score.toFixed(2)}`;
+
+  if (score === 0) {
+    resultMessage.textContent = '🎉 Perfect! You matched the target exactly!';
+    streak++;
+  } else {
+    resultMessage.textContent = 'Good try! Keep practicing.';
+    streak = 0;
+  }
+
+  saveStreak();
+
+  // Save progress for today
+  const today = formatDate(new Date());
+  saveProgress(today, diceValues, targetNumber, input, score.toFixed(2));
+  loadArchive();
+  updateStreakDisplay();
+}
+
+// --- Button event listeners ---
 backspaceBtn.addEventListener('click', () => {
   answerInput.value = answerInput.value.slice(0, -1);
   answerInput.focus();
@@ -190,40 +235,17 @@ clearBtn.addEventListener('click', () => {
 });
 
 submitBtn.addEventListener('click', () => {
-  let expr = answerInput.value.trim();
-  if (expr.length === 0) {
-    resultMessage.textContent = 'Please enter an expression.';
-    return;
-  }
-
-  if (!usesAllDiceOnce(expr)) {
-    resultMessage.textContent = 'You must use all dice values exactly once.';
-    return;
-  }
-
-  let val = evaluateExpression(expr);
-  if (val === null) {
-    resultMessage.textContent = 'Invalid expression.';
-    return;
-  }
-
-  val = Number(val.toFixed(5)); // limit decimals
-  let score = computeScore(val);
-
-  if (score === 0) {
-    resultMessage.textContent = '🎉 Perfect match! You nailed it!';
-  } else {
-    resultMessage.textContent = `You got ${val}, which is ${score} away from the target.`;
-  }
-
-  scoreMessage.textContent = `Target Number: ${targetNumber}`;
-
-  // Save answer and score
-  let todayStr = formatDate(new Date());
-  saveProgress(todayStr, diceValues, targetNumber, expr, score);
-  loadArchive();
+  submitAnswer();
+  answerInput.focus();
 });
 
-// --- Initialize ---
-seedArchive();
+// Allow pressing Enter to submit answer
+answerInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    submitAnswer();
+  }
+});
+
+// --- On page load ---
+loadStreak();
 initGame();
