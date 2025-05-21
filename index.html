@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Daily Dice Game</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -17,10 +17,33 @@
   <label for="date-select">Select a Date: </label>
   <input type="date" id="date-select" />
 
-  <div id="game-number"></div>
   <div id="target"></div>
   <div id="dice-container"></div>
   <div id="expression"></div>
   <div id="buttons">
     <button onclick="addOp('+')">+</button>
-    <button o
+    <button onclick="addOp('-')">−</button>
+    <button onclick="addOp('*')">×</button>
+    <button onclick="addOp('/')">÷</button>
+    <button onclick="addOp('(')">(</button>
+    <button onclick="addOp(')')">)</button>
+    <button onclick="backspace()">←</button>
+    <button onclick="clearExpression()">Clear</button>
+    <button onclick="submitExpression()">Submit</button>
+  </div>
+
+  <div id="live-result"></div>
+  <div id="best-score"></div>
+  <div id="streak"></div>
+
+  <h2>Attempts Archive</h2>
+  <table id="results-table">
+    <thead>
+      <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="script.js"></script>
+</body>
+</html>
