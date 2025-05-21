@@ -6,8 +6,10 @@ body {
 }
 
 #target {
-  font-size: 2.5em;
-  margin: 10px 0;
+  font-size: 3em;
+  font-weight: bold;
+  color: #333;
+  margin: 20px 0;
 }
 
 #dice-container {
@@ -22,12 +24,12 @@ body {
   height: 50px;
   font-size: 1.5em;
   font-weight: bold;
-  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
   cursor: pointer;
+  user-select: none;
 }
 
 .used {
@@ -36,17 +38,35 @@ body {
 }
 
 #expression {
-  font-size: 1.3em;
-  margin-bottom: 10px;
+  font-size: 1.5em;
+  margin: 15px 0;
   min-height: 30px;
+  font-weight: bold;
 }
 
 #buttons button {
-  margin: 5px;
-  padding: 10px;
-  font-size: 1.1em;
+  margin: 6px;
+  padding: 15px 20px;
+  font-size: 1.4em;
+  border: none;
+  border-radius: 6px;
+  background-color: #eee;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#buttons button:hover {
+  background-color: #ddd;
 }
 
 #result, #score, #streak, #archive {
   margin-top: 15px;
+  font-size: 1.1em;
 }
+
+.die.red { background: red; color: white; }
+.die.white { background: white; color: black; border: 1px solid #ccc; }
+.die.blue { background: blue; color: white; }
+.die.yellow { background: yellow; color: black; }
+.die.green { background: green; color: white; }
+.die.black { background: black; color: yellow; }
