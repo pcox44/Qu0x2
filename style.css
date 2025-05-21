@@ -1,85 +1,130 @@
 body {
   font-family: sans-serif;
-  text-align: center;
-  background: #f5f5f5;
-  color: #333;
   padding: 20px;
+  background: #f9f9f9;
+  color: #333;
+  max-width: 800px;
+  margin: auto;
 }
 
 h1 {
-  font-size: 2.5em;
+  text-align: center;
 }
 
 .rules {
-  max-width: 600px;
-  margin: 10px auto;
-  font-size: 1em;
-  background: #fff8dc;
+  background: #eef;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
 }
 
-#target {
-  font-size: 2em;
-  margin: 10px;
+#target-container {
+  font-size: 24px;
   font-weight: bold;
+  margin: 10px 0;
+  text-align: center;
 }
 
 #dice-container {
   display: flex;
   justify-content: center;
+  margin: 20px 0;
   gap: 10px;
-  margin: 10px;
 }
 
 .die {
-  font-size: 2em;
-  padding: 15px;
-  width: 50px;
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 60px;
   border-radius: 10px;
   cursor: pointer;
   user-select: none;
 }
 
 .die.used {
-  opacity: 0.4;
-  pointer-events: none;
+  opacity: 0.5;
 }
+
+.die-1 { background: red; color: white; }
+.die-2 { background: white; color: black; border: 2px solid black; }
+.die-3 { background: blue; color: white; }
+.die-4 { background: yellow; color: black; }
+.die-5 { background: green; color: white; }
+.die-6 { background: black; color: yellow; }
 
 #expression {
-  font-size: 1.5em;
-  margin: 15px;
+  font-size: 20px;
   min-height: 30px;
+  margin: 10px;
+  text-align: center;
+  user-select: text;
 }
 
-#buttons button {
-  padding: 15px;
+#buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.op-row, .ctrl-row {
   margin: 5px;
-  font-size: 1.2em;
-  border-radius: 10px;
+}
+
+button {
+  font-size: 20px;
+  padding: 10px 15px;
+  margin: 2px;
+  border-radius: 5px;
   cursor: pointer;
+  user-select: none;
+}
+
+#live-result, #score-display, #streak-display, #perfect-count-display {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 #results-table {
   width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
   border-collapse: collapse;
+  margin-top: 10px;
 }
 
 #results-table th, #results-table td {
   border: 1px solid #ccc;
   padding: 8px;
+  text-align: center;
 }
 
-#live-result, #best-score, #streak {
-  font-size: 1.2em;
-  margin: 10px;
+#archive {
+  margin-top: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 5px;
+  background: #fff;
 }
 
-/* Horse racing colors */
-.die:nth-child(1) { background-color: red; color: white; }
-.die:nth-child(2) { background-color: blue; color: white; }
-.die:nth-child(3) { background-color: green; color: white; }
-.die:nth-child(4) { background-color: orange; color: white; }
-.die:nth-child(5) { background-color: purple; color: white; }
+.archive-entry {
+  padding: 6px;
+  margin: 5px 0;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+}
+
+.archive-entry.perfect {
+  background: #d4edda;
+  border-color: #28a745;
+}
+
+#navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
