@@ -1,168 +1,224 @@
+/* Reset and base */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  max-width: 900px;
-  margin: 10px auto;
-  padding: 0 15px 50px;
-  background: #fff;
-  color: #111;
-  user-select: none;
+  background-color: #121212;
+  color: #eee;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 1rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 h1 {
-  text-align: center;
-  margin-bottom: 8px;
+  font-size: 2.5rem;
+  margin-bottom: 0.25rem;
+  color: #ffcc00;
+  text-shadow: 1px 1px 3px #333;
 }
 
-.target-number {
-  font-size: 3.5rem;
-  font-weight: 900;
-  text-align: center;
-  margin-bottom: 12px;
-  color: #003366;
-  letter-spacing: 4px;
+h2 {
+  color: #ffcc00;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
+/* Rules section */
+#rules {
+  background-color: #222;
+  border: 2px solid #444;
+  border-radius: 8px;
+  padding: 1rem;
+  max-width: 600px;
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+/* Target number */
+#target {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem;
+  color: #ffdd55;
+  text-align: center;
+  text-shadow: 0 0 5px #ffaa00;
+}
+
+/* Dice container */
 #dice-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 15px;
-  gap: 15px;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Dice buttons container */
+#dice-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .dice {
-  width: 70px;
-  height: 70px;
+  width: 60px;
+  height: 60px;
   border-radius: 12px;
-  font-size: 2.8rem;
-  font-weight: 900;
-  line-height: 70px;
-  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
   color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
   user-select: none;
-  transition: background 0.3s, color 0.3s;
-  box-shadow: 0 3px 8px rgb(0 0 0 / 0.2);
+  box-shadow: 0 2px 5px #0008;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   border: 3px solid transparent;
 }
 
+.dice:active {
+  transform: scale(0.9);
+  box-shadow: 0 1px 3px #000;
+}
+
+/* Dice colors by horse racing colors */
+.dice[data-value="1"] { background: #d42e28; } /* Red */
+.dice[data-value="2"] { background: #ffffff; color: #000; border-color: #ccc; } /* White */
+.dice[data-value="3"] { background: #0346a3; } /* Blue */
+.dice[data-value="4"] { background: #ffec47; color: #222; } /* Yellow */
+.dice[data-value="5"] { background: #1f7a20; } /* Green */
+.dice[data-value="6"] { background: #000000; color: #ffd700; border-color: #ffd700; } /* Black bg, yellow number */
+
+/* Highlight dice used in expression */
 .dice.used {
-  background: black !important;
-  color: #555 !important;
-  cursor: default;
-  border-color: #222;
+  border-color: #ffcc00;
+  box-shadow: 0 0 8px #ffcc00;
 }
 
-/* Horse racing dice colors */
-.dice.dice1 { background: #D62828; } /* red */
-.dice.dice2 { background: #F0F0F0; color: black; } /* white bg black text */
-.dice.dice3 { background: #0033A0; } /* blue */
-.dice.dice4 { background: #FFDD00; color: black; } /* yellow */
-.dice.dice5 { background: #008000; } /* green */
-.dice.dice6 {
-  background: black;
-  color: #FFDD00; /* yellow number on black */
-  font-weight: 900;
-}
-
+/* Expression display */
 #expression {
   font-size: 2rem;
-  font-weight: 700;
-  min-height: 40px;
+  min-height: 3rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem 0.5rem;
+  background: #222;
+  border-radius: 6px;
+  max-width: 600px;
+  word-break: break-word;
   text-align: center;
-  margin-bottom: 8px;
-  letter-spacing: 1.5px;
   user-select: text;
 }
 
+/* Buttons container */
 #buttons {
+  max-width: 600px;
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 15px;
+  flex-direction: column;
+  align-items: center;
 }
 
-.op-btn {
-  font-size: 1.4rem;
-  font-weight: 700;
-  padding: 12px 20px;
-  border-radius: 10px;
+/* Operators and control buttons */
+#op-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  max-width: 600px;
+  margin-bottom: 1rem;
+}
+
+#op-buttons button {
+  font-size: 1.8rem;
+  padding: 10px 14px;
+  border-radius: 8px;
   border: none;
+  background-color: #333;
+  color: #eee;
   cursor: pointer;
-  background: #0077cc;
-  color: white;
-  transition: background-color 0.2s;
-  min-width: 52px;
+  min-width: 48px;
+  transition: background-color 0.2s ease;
   user-select: none;
 }
 
-.op-btn:hover:not(.used) {
-  background-color: #005fa3;
-}
-
-.op-btn:active:not(.used) {
-  background-color: #00497a;
-}
-
-.submit-btn {
-  background: #28a745;
-}
-
-.submit-btn:hover {
-  background: #1e7e34;
-}
-
-#live-result, #score, #streak {
-  text-align: center;
-  font-weight: 700;
-  font-size: 1.3rem;
-  margin-bottom: 8px;
-  min-height: 22px;
+#op-buttons button:hover {
+  background-color: #ffcc00;
   color: #222;
 }
 
-#results-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 15px;
-  font-size: 1rem;
-}
-
-#results-table th,
-#results-table td {
-  border: 1px solid #ddd;
-  padding: 6px 10px;
+/* Result & score displays */
+#live-result,
+#score,
+#streak {
+  font-size: 1.4rem;
+  margin: 0.2rem 0;
+  min-height: 1.4em;
+  font-weight: 600;
+  color: #eee;
   text-align: center;
 }
 
-#results-table th {
-  background-color: #0077cc;
-  color: white;
-}
-
+/* Archive section */
 #archive {
-  max-height: 220px;
+  max-width: 600px;
+  margin-top: 1rem;
+  background: #222;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  max-height: 300px;
   overflow-y: auto;
-  border: 1px solid #ddd;
-  padding: 10px;
-  background: #f9f9f9;
+  color: #eee;
+  font-family: monospace;
   font-size: 0.9rem;
-  color: #222;
+  user-select: text;
 }
 
 .archive-day {
-  margin-bottom: 6px;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #444;
+  padding-bottom: 0.5rem;
 }
 
-.perfect {
-  color: green;
-  font-weight: 700;
-  margin-left: 5px;
+.archive-day h3 {
+  margin: 0 0 0.2rem 0;
+  color: #ffcc00;
 }
 
-.dice.used-button {
-  background: black !important;
-  color: #555 !important;
-  cursor: default !important;
-  border-color: #222 !important;
+.archive-solution {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 1rem;
+  margin-bottom: 0.15rem;
+}
+
+.archive-solution .expr {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.archive-solution .checkmark {
+  color: #0f0;
+  font-weight: bold;
+  margin-left: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  #op-buttons button {
+    font-size: 1.4rem;
+    padding: 8px 10px;
+    min-width: 40px;
+  }
+
+  .dice {
+    width: 50px;
+    height: 50px;
+    font-size: 2rem;
+  }
+
+  #target {
+    font-size: 2.5rem;
+  }
 }
