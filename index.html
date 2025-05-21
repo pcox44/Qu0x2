@@ -1,40 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Daily Dice Game</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily Dice Game</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Daily Dice Game</h1>
-  <div id="target-container">
-    Target Number: <span id="target-number"></span>
+  <div class="container">
+    <h1>Daily Dice Game</h1>
+    <div id="target-number">Target Number: --</div>
+
+    <div id="dice-container" class="dice-container"></div>
+
+    <div id="expression-container" class="expression-container">
+      <div id="expression" class="expression"></div>
+    </div>
+
+    <div class="buttons-container">
+      <div id="number-buttons" class="number-buttons"></div>
+
+      <div class="operator-buttons">
+        <button class="operator-btn" data-op="+">+</button>
+        <button class="operator-btn" data-op="-">−</button>
+        <button class="operator-btn" data-op="*">×</button>
+        <button class="operator-btn" data-op="/">÷</button>
+        <button class="operator-btn" data-op="(">(</button>
+        <button class="operator-btn" data-op=")">)</button>
+      </div>
+
+      <div class="control-buttons">
+        <button id="backspace-btn">Backspace</button>
+        <button id="clear-btn">Clear</button>
+        <button id="submit-btn">Submit</button>
+      </div>
+    </div>
+
+    <div id="result" class="result"></div>
+    <div id="score" class="score"></div>
+    <div id="streak" class="streak"></div>
+
+    <div id="archive" class="archive"></div>
   </div>
 
-  <div id="dice-container"></div>
-
-  <div id="expression-container">
-    <div id="expr-text" class="expression"></div>
-  </div>
-
-  <div id="buttons-container">
-    <button id="btn-add">+</button>
-    <button id="btn-sub">-</button>
-    <button id="btn-mul">&times;</button>
-    <button id="btn-div">&divide;</button>
-    <button id="btn-open-paren">(</button>
-    <button id="btn-close-paren">)</button>
-    <button id="btn-backspace">Backspace</button>
-    <button id="btn-clear">Clear</button>
-    <button id="btn-submit">Submit</button>
-  </div>
-
-  <div id="result"></div>
-  <div id="score"></div>
-  <div id="streak"></div>
-  <div id="archive"></div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
