@@ -1,49 +1,85 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daily Dice Game</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <h1>🎲 Daily Dice Game</h1>
-  <p class="rules">
-    Use each of the five dice exactly once, and any operations (+, −, ×, ÷, parentheses) as needed, to get as close as possible to the target number.
-    The closer you get, the better your score — a perfect match gives you a score of 0. You can play multiple times per day, but only perfect scores count
-    toward your streak. Dice must be separated by operations; you can't combine digits like 4 and 5 to make 45.
-  </p>
+body {
+  font-family: sans-serif;
+  text-align: center;
+  background: #f5f5f5;
+  color: #333;
+  padding: 20px;
+}
 
-  <label for="date-select">Select a Date: </label>
-  <input type="date" id="date-select" />
+h1 {
+  font-size: 2.5em;
+}
 
-  <div id="target"></div>
-  <div id="dice-container"></div>
-  <div id="expression"></div>
-  <div id="buttons">
-    <button onclick="addOp('+')">+</button>
-    <button onclick="addOp('-')">−</button>
-    <button onclick="addOp('*')">×</button>
-    <button onclick="addOp('/')">÷</button>
-    <button onclick="addOp('(')">(</button>
-    <button onclick="addOp(')')">)</button>
-    <button onclick="backspace()">←</button>
-    <button onclick="clearExpression()">Clear</button>
-    <button onclick="submitExpression()">Submit</button>
-  </div>
+.rules {
+  max-width: 600px;
+  margin: 10px auto;
+  font-size: 1em;
+  background: #fff8dc;
+  padding: 10px;
+  border-radius: 10px;
+}
 
-  <div id="live-result"></div>
-  <div id="best-score"></div>
-  <div id="streak"></div>
+#target {
+  font-size: 2em;
+  margin: 10px;
+  font-weight: bold;
+}
 
-  <h2>Attempts Archive</h2>
-  <table id="results-table">
-    <thead>
-      <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+#dice-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px;
+}
 
-  <script src="script.js"></script>
-</body>
-</html>
+.die {
+  font-size: 2em;
+  padding: 15px;
+  width: 50px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.die.used {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+#expression {
+  font-size: 1.5em;
+  margin: 15px;
+  min-height: 30px;
+}
+
+#buttons button {
+  padding: 15px;
+  margin: 5px;
+  font-size: 1.2em;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#results-table {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+
+#results-table th, #results-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+
+#live-result, #best-score, #streak {
+  font-size: 1.2em;
+  margin: 10px;
+}
+
+/* Horse racing colors */
+.die:nth-child(1) { background-color: red; color: white; }
+.die:nth-child(2) { background-color: blue; color: white; }
+.die:nth-child(3) { background-color: green; color: white; }
+.die:nth-child(4) { background-color: orange; color: white; }
+.die:nth-child(5) { background-color: purple; color: white; }
