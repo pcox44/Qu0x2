@@ -1,133 +1,211 @@
 // script.js
-const targetEl = document.getElementById('target');
-const diceContainer = document.getElementById('dice-container');
-const expressionEl = document.getElementById('expression');
-const resultEl = document.getElementById('result');
-const scoreEl = document.getElementById('score');
-const streakEl = document.getElementById('streak');
-const archiveEl = document.getElementById('archive');
 
-let expression = '';
-let usedDice = [];
-let dice = [];
-let target = 0;
-let todayKey = new Date().toISOString().slice(0, 10);
+// === Helpers for date seed and random ===
+function getEasternMidnight() {
+  const now = new Date();
+  // Convert to UTC-4 (Eastern Daylight Time or Standard)
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const estOffset = -4 * 60; // EDT offset in minutes
+  const estTime = new Date(utc + estOffset * 60000);
+  estTime.setHours(0,0,0,0);
+  return estTime;
+}
 
 function seedFromDate() {
-  const now = new Date();
-  now.setUTCHours(now.getUTCHours() - 4); // Convert to Eastern Time
-  const seed = parseInt(now.toISOString().slice(0, 10).replace(/-/g, ''), 10);
-  return seed;
+  const estMidnight = getEasternMidnight();
+  return estMidnight.getFullYear() * 10000 + (estMidnight.getMonth()+1)*100 + estMidnight.getDate();
 }
 
 function seededRandom(seed) {
-  return function () {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
-  };
+  // Simple mulberry32 PRNG
+  let t = seed += 0x6D2B79F5;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
-function generatePuzzle() {
-  const rng = seededRandom(seedFromDate());
-  target = Math.floor(rng() * 100) + 1;
-  dice = Array.from({ length: 5 }, () => Math.floor(rng() * 6) + 1);
-  usedDice = Array(5).fill(false);
-  render();
+function shuffleArray(array, seed) {
+  let random = () => seededRandom(seed++);
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
 }
 
-function render() {
-  targetEl.textContent = `🎯 Target: ${target}`;
-  diceContainer.innerHTML = '';
-  dice.forEach((value, i) => {
-    const die = document.createElement('div');
-    die.className = 'die';
+// === Game variables ===
+let targetNumber;
+let diceValues = [];
+let usedDice = [false, false, false, false, false];
+let expression = "";
+const diceColors = ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"];
+
+const diceContainer = document.getElementById("dice-container");
+const targetSpan = document.getElementById("target-number");
+const exprText = document.getElementById("expr-text");
+const resultDiv = document.getElementById("result");
+const scoreDiv = document.getElementById("score");
+const streakDiv = document.getElementById("streak");
+const archiveDiv = document.getElementById("archive");
+
+// === Initialize Game ===
+function initGame() {
+  // Reset expression & used dice
+  expression = "";
+  usedDice = [false, false, false, false, false];
+  updateExpression();
+
+  // Generate puzzle by seed (date)
+  const seed = seedFromDate();
+
+  // Generate target number (1-100)
+  targetNumber = Math.floor(seededRandom(seed) * 100) + 1;
+  targetSpan.textContent = targetNumber;
+
+  // Generate 5 dice (values 1-6)
+  diceValues = [1,2,3,4,5,6];
+  shuffleArray(diceValues, seed + 100);
+  diceValues = diceValues.slice(0,5);
+
+  // Display dice
+  diceContainer.innerHTML = "";
+  diceValues.forEach((value, i) => {
+    const die = document.createElement("div");
+    die.classList.add("die");
     die.textContent = value;
-    die.style.backgroundColor = ['#FF6B6B','#6BCB77','#4D96FF','#FFD93D','#845EC2'][i];
-    if (usedDice[i]) die.classList.add('used');
-    die.onclick = () => useDie(i);
+    die.style.backgroundColor = diceColors[i % diceColors.length];
+    die.dataset.index = i;
+    die.onclick = () => toggleDieUsage(i);
     diceContainer.appendChild(die);
   });
-  expressionEl.textContent = expression;
+
+  // Load saved progress
+  loadProgress();
+  updateScore("");
+  updateStreak();
+  updateArchive();
 }
 
-function useDie(index) {
-  if (usedDice[index]) return;
-  expression += dice[index];
-  usedDice[index] = true;
-  render();
+function toggleDieUsage(i) {
+  if (usedDice[i]) return; // already used
+  // Add die value to expression if not used
+  appendNumber(diceValues[i]);
+  usedDice[i] = true;
+  updateDiceStyles();
 }
 
-function addOp(op) {
+function updateDiceStyles() {
+  diceContainer.childNodes.forEach((die, i) => {
+    if (usedDice[i]) {
+      die.classList.add("used");
+    } else {
+      die.classList.remove("used");
+    }
+  });
+}
+
+// === Expression manipulation ===
+function appendNumber(num) {
+  expression += num.toString();
+  updateExpression();
+}
+
+function appendOperator(op) {
   expression += op;
-  render();
+  updateExpression();
 }
 
 function backspace() {
+  if (expression.length === 0) return;
+  // Remove last char from expression
+  const lastChar = expression.slice(-1);
   expression = expression.slice(0, -1);
-  render();
+  // If lastChar was a digit and matches a dice used, free that dice
+  if (/\d/.test(lastChar)) {
+    // Find dice index that matches the number and is used but not freed yet
+    for (let i = diceValues.length - 1; i >= 0; i--) {
+      if (usedDice[i] && diceValues[i].toString() === lastChar) {
+        usedDice[i] = false;
+        break;
+      }
+    }
+  }
+  updateDiceStyles();
+  updateExpression();
+  updateScore("");
 }
 
 function clearExpression() {
-  expression = '';
-  usedDice = Array(5).fill(false);
-  render();
+  expression = "";
+  usedDice = [false, false, false, false, false];
+  updateDiceStyles();
+  updateExpression();
+  updateScore("");
 }
 
-function submitExpression() {
+function updateExpression() {
+  exprText.textContent = expression;
+}
+
+// === Check answer ===
+function checkAnswer() {
+  if (expression.length === 0) {
+    resultDiv.textContent = "Enter an expression!";
+    return;
+  }
+  // Check if all dice used exactly once
+  if (usedDice.includes(false)) {
+    resultDiv.textContent = "You must use all dice exactly once.";
+    return;
+  }
+
   try {
-    const result = eval(expression);
-    const score = Math.abs(target - result);
-    resultEl.textContent = `Result: ${result}`;
-    scoreEl.textContent = `Score: ${score}`;
-    if (score === 0) {
-      resultEl.textContent += ' 🎉 Congratulations!';
-      saveGame(true);
-    } else {
-      saveGame(false);
+    // Evaluate expression safely
+    // Only allow digits, + - * / ( ) and spaces
+    if (!/^[0-9+\-*/() ]+$/.test(expression)) {
+      resultDiv.textContent = "Invalid characters in expression.";
+      return;
     }
-  } catch {
-    resultEl.textContent = 'Invalid expression';
+
+    const value = eval(expression); // using eval for simplicity
+
+    if (typeof value !== "number" || isNaN(value) || !isFinite(value)) {
+      resultDiv.textContent = "Expression does not evaluate to a valid number.";
+      return;
+    }
+
+    const diff = Math.abs(value - targetNumber);
+    updateScore(diff);
+
+    if (diff === 0) {
+      resultDiv.textContent = "🎉 Congratulations! Perfect match!";
+      saveProgress(true);
+    } else {
+      resultDiv.textContent = `Result: ${value}`;
+      saveProgress(false, diff);
+    }
+  } catch (e) {
+    resultDiv.textContent = "Error evaluating expression.";
   }
 }
 
-function saveGame(solved) {
-  const archive = JSON.parse(localStorage.getItem('ddg-archive') || '{}');
-  archive[todayKey] = { expression, solved };
-  localStorage.setItem('ddg-archive', JSON.stringify(archive));
-
-  updateStreak(archive);
-  displayArchive(archive);
-}
-
-function updateStreak(archive) {
-  let streak = 0;
-  let date = new Date();
-  for (;;) {
-    const key = date.toISOString().slice(0, 10);
-    if (archive[key]?.solved) {
-      streak++;
-      date.setDate(date.getDate() - 1);
-    } else {
-      break;
-    }
+function updateScore(diff) {
+  if (diff === "") {
+    scoreDiv.textContent = "";
+  } else {
+    scoreDiv.textContent = `Score (distance from target): ${diff}`;
   }
-  streakEl.textContent = `🔥 Streak: ${streak}`;
 }
 
-function displayArchive(archive) {
-  archiveEl.innerHTML = '<strong>Archive:</strong><br>' + Object.entries(archive).map(([date, data]) => {
-    return `${date}: ${data.solved ? '✅' : '❌'} ${data.expression}`;
-  }).join('<br>');
-}
+// === Local Storage: Save progress, streak, archive ===
+function saveProgress(solved, diff = null) {
+  const key = `dailyDiceGame-${seedFromDate()}`;
+  localStorage.setItem(key, JSON.stringify({
+    expression,
+    solved,
+    diff,
+  }));
 
-// On load
-const archive = JSON.parse(localStorage.getItem('ddg-archive') || '{}');
-if (archive[todayKey]) {
-  expression = archive[todayKey].expression;
-  usedDice = Array(5).fill(true);
-  resultEl.textContent = archive[todayKey].solved ? '🎉 Already solved!' : '';
-}
-
-generatePuzzle();
-updateStreak(archive);
-displayArchive(archive);
+  // Update streak if solved
+  if (solved) {
+    updateStreakStorage();
+  }
