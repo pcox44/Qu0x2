@@ -2,47 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Daily Dice Game</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>🎲 Daily Dice Game</h1>
   <p class="rules">
-    Use each of the five dice exactly once, and any operations (+, −, ×, ÷, parentheses) as needed, to get as close as possible to the target number.
-    The closer you get, the better your score — a perfect match gives you a score of 0. You can play multiple times per day, but only perfect scores count
-    toward your streak. Dice must be separated by operations; you can't combine digits like 4 and 5 to make 45.
+    Use each die exactly once to get as close as possible to the target number (1–100). 
+    Use +, −, ×, ÷, and parentheses freely. Score is absolute difference from target. 
+    Try to find perfect solutions (score 0)!
   </p>
 
-  <label for="date-select">Select a Date: </label>
-  <input type="date" id="date-select" />
+  <div id="navigation">
+    <button onclick="previousDay()">← Previous</button>
+    <span id="game-label"></span>
+    <button onclick="nextDay()">Next →</button>
+  </div>
 
-  <div id="target"></div>
+  <div id="target-container">🎯 Target: <span id="target"></span></div>
   <div id="dice-container"></div>
   <div id="expression"></div>
+
   <div id="buttons">
-    <button onclick="addOp('+')">+</button>
-    <button onclick="addOp('-')">−</button>
-    <button onclick="addOp('*')">×</button>
-    <button onclick="addOp('/')">÷</button>
-    <button onclick="addOp('(')">(</button>
-    <button onclick="addOp(')')">)</button>
-    <button onclick="backspace()">←</button>
-    <button onclick="clearExpression()">Clear</button>
-    <button onclick="submitExpression()">Submit</button>
+    <div class="op-row">
+      <button onclick="addOp('+')">+</button>
+      <button onclick="addOp('-')">−</button>
+      <button onclick="addOp('*')">×</button>
+      <button onclick="addOp('/')">÷</button>
+      <button onclick="addOp('(')">(</button>
+      <button onclick="addOp(')')">)</button>
+    </div>
+    <div class="ctrl-row">
+      <button onclick="backspace()">⌫</button>
+      <button onclick="clearExpression()">Clear</button>
+      <button onclick="submitExpression()">Submit</button>
+    </div>
   </div>
 
   <div id="live-result"></div>
-  <div id="best-score"></div>
-  <div id="streak"></div>
+  <div id="score-display"></div>
+  <div id="streak-display"></div>
+  <div id="perfect-count-display"></div>
 
-  <h2>Attempts Archive</h2>
+  <h2>Attempts</h2>
   <table id="results-table">
     <thead>
       <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
     </thead>
     <tbody></tbody>
   </table>
+
+  <h2>Game Archive</h2>
+  <div id="archive"></div>
 
   <script src="script.js"></script>
 </body>
