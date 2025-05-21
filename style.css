@@ -1,53 +1,155 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Daily Dice Game</title>
-<link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <div class="container">
-    <h1>Daily Dice Game</h1>
-    <p id="blurb">
-      Use each of the 5 dice exactly once to create an expression as close as possible to the target number.<br/>
-      You can use +, -, *, /, and parentheses freely.<br/>
-      The score is the absolute difference between your result and the target.<br/>
-      Try to get a perfect solution (score 0) and build your streak!
-    </p>
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 1em;
+  background: #f8f9fa;
+  color: #222;
+}
 
-    <div id="target-container">
-      Target Number: <span id="target-number"></span>
-    </div>
+h1 {
+  text-align: center;
+  margin-bottom: 0.2em;
+}
 
-    <div id="dice-container"></div>
+.target {
+  font-size: 3em;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1em;
+  color: #003366;
+  user-select: none;
+}
 
-    <input type="text" id="expression" readonly placeholder="Your expression" />
+.dice-container {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+  margin-bottom: 1em;
+}
 
-    <div id="live-result">Result: -</div>
-    <div id="score-display">Score: -</div>
+.die {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  background: white;
+  border: 2px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s, color 0.2s;
+}
 
-    <div class="buttons-row">
-      <button class="btn-op btn-small">(</button>
-      <button class="btn-op btn-small">)</button>
-      <button class="btn-op btn-small">+</button>
-      <button class="btn-op btn-small">-</button>
-      <button class="btn-op btn-small">*</button>
-      <button class="btn-op btn-small">/</button>
-    </div>
+.die.used {
+  background: black;
+  color: white !important;
+  cursor: default;
+}
 
-    <div class="buttons-row">
-      <button id="btn-backspace">Backspace</button>
-      <button id="btn-clear">Clear</button>
-      <button id="btn-submit">Submit</button>
-    </div>
+.die[data-value="1"] { color: #CC0000; } /* red */
+.die[data-value="2"] { color: #003399; } /* blue */
+.die[data-value="3"] { color: #009933; } /* green */
+.die[data-value="4"] { color: #FFCC00; } /* gold */
+.die[data-value="5"] { color: #660066; } /* purple */
+.die[data-value="6"] { color: #FF6600; } /* orange */
 
-    <div id="streak">Current Streak: 0</div>
+.expression {
+  font-size: 1.6em;
+  min-height: 2em;
+  border: 2px solid #888;
+  border-radius: 6px;
+  margin: 0 auto 0.5em auto;
+  max-width: 400px;
+  padding: 0.25em 0.5em;
+  user-select: text;
+  white-space: nowrap;
+  overflow-x: auto;
+}
 
-    <h2>Today's Attempts</h2>
-    <div id="archive"></div>
-  </div>
+.live-result {
+  font-size: 1.2em;
+  color: #333;
+  text-align: center;
+  margin-bottom: 0.1em;
+  min-height: 1.2em;
+}
 
-<script src="script.js"></script>
-</body>
-</html>
+.score-display {
+  font-weight: bold;
+  font-size: 1.2em;
+  color: #004488;
+  text-align: center;
+  margin-bottom: 1em;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin-bottom: 1em;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.buttons button {
+  font-size: 1.4em;
+  padding: 0.3em 0.6em;
+  border-radius: 8px;
+  border: 2px solid #004488;
+  background: #eef6ff;
+  color: #004488;
+  cursor: pointer;
+  user-select: none;
+  min-width: 45px;
+  transition: background-color 0.2s ease;
+}
+
+.buttons button:hover:not(:disabled) {
+  background-color: #cce0ff;
+}
+
+.buttons button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+#results-table {
+  width: 100%;
+  max-width: 500px;
+  border-collapse: collapse;
+  margin: 0 auto 2em auto;
+}
+
+#results-table th, #results-table td {
+  border: 1px solid #ccc;
+  padding: 0.4em 0.6em;
+  text-align: center;
+  font-size: 1em;
+}
+
+.archive {
+  max-width: 400px;
+  margin: 0 auto;
+  font-size: 1em;
+  line-height: 1.4;
+}
+
+.archive .day {
+  padding: 0.3em 0.5em;
+  border-bottom: 1px solid #ccc;
+}
+
+.archive .perfect {
+  font-weight: bold;
+  color: #007700;
+}
+
+.archive .checkmark {
+  color: green;
+  margin-left: 0.5em;
+  font-weight: bold;
+}
