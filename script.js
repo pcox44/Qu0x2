@@ -9,40 +9,51 @@ const archiveEl = document.getElementById("archive");
 
 let expression = "";
 let usedDice = [];
-let currentDice = [];
-let target = generateTargetNumber();
+let currentDice = getDailyDice();
+let target = getDailyTarget();
 let results = getStoredResults();
 let streak = parseInt(localStorage.getItem("streak") || "0");
 
-function generateTargetNumber() {
-  const now = new Date();
-  now.setUTCHours(5, 0, 0, 0); // Midnight Eastern
-  const seed = now.toISOString().split("T")[0];
-  let hash = 0;
-  for (let char of seed) hash = (hash * 31 + char.charCodeAt(0)) % 100000;
-  return (hash % 100) + 1;
+function seedPRNG(seed) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return () => (h = Math.imul(h ^ (h >>> 13), 0x5bd1e995)) >>> 0;
 }
 
-function rollDice() {
-  currentDice = Array.from({ length: 5 }, () => Math.floor(Math.random() * 6) + 1);
-  usedDice = [];
-  localStorage.setItem("currentDice", JSON.stringify(currentDice));
+function getToday() {
+  const now = new Date();
+  now.setUTCHours(5, 0, 0, 0); // Midnight Eastern Time
+  return now.toISOString().split("T")[0];
+}
+
+function getDailyTarget() {
+  const rng = seedPRNG(getToday());
+  return (rng() % 100) + 1;
+}
+
+function getDailyDice() {
+  const rng = seedPRNG(getToday() + "-dice");
+  return Array.from({ length: 5 }, () => (rng() % 6) + 1);
 }
 
 function renderDice() {
   diceContainer.innerHTML = "";
   currentDice.forEach((value, i) => {
-    const btn = document.createElement("div");
-    btn.className = `die die-${value}` + (usedDice.includes(i) ? " used" : "");
-    btn.textContent = value;
+    const div = document.createElement("div");
+    div.className = `die die-${value}` + (usedDice.includes(i) ? " used" : "");
+    div.textContent = value;
     if (!usedDice.includes(i)) {
-      btn.onclick = () => {
+      div.onclick = () => {
         expression += value;
         usedDice.push(i);
         updateExpression();
+        renderDice();
       };
     }
-    diceContainer.appendChild(btn);
+    diceContainer.appendChild(div);
   });
 }
 
@@ -67,9 +78,9 @@ function clearExpression() {
 function updateExpression() {
   expressionEl.textContent = expression;
   try {
-    const value = eval(expression);
-    if (typeof value === "number" && !isNaN(value)) {
-      liveResultEl.textContent = `= ${value}`;
+    const result = eval(expression);
+    if (typeof result === "number" && !isNaN(result)) {
+      liveResultEl.textContent = `= ${result}`;
     } else {
       liveResultEl.textContent = "";
     }
@@ -96,12 +107,6 @@ function saveResult(expression, result, score) {
   localStorage.setItem("dailyResults", JSON.stringify(all));
 }
 
-function getToday() {
-  const now = new Date();
-  now.setUTCHours(5, 0, 0, 0);
-  return now.toISOString().split("T")[0];
-}
-
 function submitExpression() {
   try {
     if (!isValidExpression(expression)) {
@@ -117,9 +122,7 @@ function submitExpression() {
 
     if (score === 0) {
       const lastSolved = localStorage.getItem("lastSolvedDate");
-      if (lastSolved === getToday()) {
-        // Already counted today
-      } else {
+      if (lastSolved !== getToday()) {
         streak += 1;
         localStorage.setItem("lastSolvedDate", getToday());
         localStorage.setItem("streak", streak.toString());
@@ -163,10 +166,5 @@ function renderArchive() {
 }
 
 // Initialize
-if (!localStorage.getItem("currentDice")) {
-  rollDice();
-} else {
-  currentDice = JSON.parse(localStorage.getItem("currentDice"));
-}
 renderDice();
 renderResults();
