@@ -1,40 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Daily Dice Game</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily Dice Game</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Daily Dice Game</h1>
-  <div id="target-container">
-    Target Number: <span id="target-number"></span>
+  <div class="container">
+    <h1>Daily Dice Game</h1>
+    <p>Use all five dice values exactly once with math operations (+, -, *, /, parentheses) to get close to the target number.</p>
+
+    <div id="dice-container" class="dice-container"></div>
+
+    <div id="target-number" class="target-number"></div>
+
+    <div class="input-container">
+      <input type="text" id="answer-input" autocomplete="off" placeholder="Enter expression here" />
+      <button id="backspace-btn">← Backspace</button>
+      <button id="clear-btn">Clear</button>
+      <button id="submit-btn">Submit</button>
+    </div>
+
+    <div id="result-message" class="result-message"></div>
+    <div id="score-message" class="score-message"></div>
+    <div id="streak-message" class="streak-message"></div>
+
+    <div id="archive-section" class="archive-section">
+      <h2>Past 30 Days Archive</h2>
+      <ul id="archive-list"></ul>
+    </div>
   </div>
 
-  <div id="dice-container"></div>
-
-  <div id="expression-container">
-    <div id="expr-text" class="expression"></div>
-  </div>
-
-  <div id="buttons-container">
-    <button id="btn-add">+</button>
-    <button id="btn-sub">-</button>
-    <button id="btn-mul">&times;</button>
-    <button id="btn-div">&divide;</button>
-    <button id="btn-open-paren">(</button>
-    <button id="btn-close-paren">)</button>
-    <button id="btn-backspace">Backspace</button>
-    <button id="btn-clear">Clear</button>
-    <button id="btn-submit">Submit</button>
-  </div>
-
-  <div id="result"></div>
-  <div id="score"></div>
-  <div id="streak"></div>
-  <div id="archive"></div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
