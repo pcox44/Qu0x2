@@ -3,43 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Daily Dice Game</title>
+  <title>🎲 Daily Dice Game</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>🎲 Daily Dice Game</h1>
-  <div id="target" class="target-number"></div>
 
-  <div id="dice-container"></div>
+  <section id="rules">
+    <h2>How to Play</h2>
+    <p>
+      Use all five dice values <strong>exactly once</strong> in your expression.<br />
+      Operations (+, -, *, /) and parentheses () are free to use as much as you want.<br />
+      You <strong>cannot combine dice values to form multi-digit numbers</strong> (e.g., 4 and 5 cannot be typed as "45").<br />
+      Your score is the absolute difference between your expression result and the target number.<br />
+      The lower your score, the better! A perfect score is 0 — exactly matching the target.<br />
+      You can try as many expressions as you like each day.
+    </p>
+  </section>
 
-  <div id="expression"></div>
+  <div id="target" aria-live="polite"></div>
+  <div id="dice-container" aria-label="Dice values"></div>
+
+  <div id="expression" aria-live="polite" aria-label="Current expression"></div>
 
   <div id="buttons">
-    <button class="op-btn" onclick="addOp('+')">+</button>
-    <button class="op-btn" onclick="addOp('-')">-</button>
-    <button class="op-btn" onclick="addOp('*')">*</button>
-    <button class="op-btn" onclick="addOp('/')">/</button>
-    <button class="op-btn" onclick="addOp('(')">(</button>
-    <button class="op-btn" onclick="addOp(')')">)</button>
-    <button class="op-btn" onclick="backspace()">&#x2190;</button>
-    <button class="op-btn" onclick="clearExpression()">Clear</button>
-    <button class="op-btn submit-btn" onclick="submitExpression()">Submit</button>
+    <div id="dice-buttons"></div>
+    <div id="op-buttons">
+      <button onclick="addOp('+')">+</button>
+      <button onclick="addOp('-')">−</button>
+      <button onclick="addOp('*')">×</button>
+      <button onclick="addOp('/')">÷</button>
+      <button onclick="addOp('(')">(</button>
+      <button onclick="addOp(')')">)</button>
+      <button onclick="backspace()">⌫</button>
+      <button onclick="clearExpression()">Clear</button>
+      <button onclick="submitExpression()">Submit</button>
+    </div>
   </div>
 
   <div id="live-result"></div>
   <div id="score"></div>
   <div id="streak"></div>
 
-  <h2>Results</h2>
-  <table id="results-table">
-    <thead>
-      <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <h2>Archive (Last 30 Days)</h2>
-  <div id="archive"></div>
+  <section>
+    <h2>Archive (Last 30 Days)</h2>
+    <div id="archive"></div>
+  </section>
 
   <script src="script.js"></script>
 </body>
