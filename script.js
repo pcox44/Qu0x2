@@ -5,27 +5,20 @@ const resultEl = document.getElementById('result');
 const scoreEl = document.getElementById('score');
 const streakEl = document.getElementById('streak');
 const archiveEl = document.getElementById('archive');
+const resultsTable = document.querySelector('#results-table tbody');
 
 let expression = '';
 let usedDice = [];
 let dice = [];
 let target = 0;
+let results = [];
 let todayKey = new Date().toISOString().slice(0, 10);
-let solutions = new Set();
-
-const dieStyles = {
-  1: ['red', 'white'],
-  2: ['white', 'black'],
-  3: ['blue', 'white'],
-  4: ['yellow', 'black'],
-  5: ['green', 'white'],
-  6: ['black', 'yellow']
-};
 
 function seedFromDate() {
   const now = new Date();
-  now.setUTCHours(now.getUTCHours() - 4); // Eastern time
-  return parseInt(now.toISOString().slice(0, 10).replace(/-/g, ''));
+  now.setUTCHours(now.getUTCHours() - 4); // Eastern Time
+  const seed = parseInt(now.toISOString().slice(0, 10).replace(/-/g, ''), 10);
+  return seed;
 }
 
 function seededRandom(seed) {
@@ -48,14 +41,14 @@ function render() {
   diceContainer.innerHTML = '';
   dice.forEach((value, i) => {
     const die = document.createElement('div');
-    die.className = `die ${dieStyles[value][0]}`;
+    die.className = 'die';
     die.textContent = value;
+    die.setAttribute('value', value);
     if (usedDice[i]) die.classList.add('used');
     die.onclick = () => useDie(i);
     diceContainer.appendChild(die);
   });
-
-  expressionEl.innerHTML = formatExpression(expression);
+  expressionEl.textContent = expression;
 }
 
 function useDie(index) {
@@ -81,49 +74,52 @@ function clearExpression() {
   render();
 }
 
-function normalize(expr) {
-  return expr.replace(/\s+/g, '').split('').sort().join('');
+function isEquivalent(a, b) {
+  return a.replace(/\s+/g, '') === b.replace(/\s+/g, '');
 }
 
 function submitExpression() {
   try {
     const result = eval(expression);
-    if (usedDice.filter(x => x).length !== 5) {
-      resultEl.textContent = '❌ Use all dice';
-      return;
-    }
     const score = Math.abs(target - result);
     resultEl.textContent = `Result: ${result}`;
     scoreEl.textContent = `Score: ${score}`;
-    const normalized = normalize(expression);
 
-    const archive = JSON.parse(localStorage.getItem('ddg-archive') || '{}');
-    archive[todayKey] = archive[todayKey] || { solutions: [], streak: 0 };
-    if (!archive[todayKey].solutions.includes(normalized)) {
-      archive[todayKey].solutions.push(normalized);
+    // Check for uniqueness
+    const alreadySubmitted = results.some(r => isEquivalent(r.expression, expression));
+    if (!alreadySubmitted) {
+      results.push({ expression, result, score });
+      updateResultsTable();
       if (score === 0) {
-        archive[todayKey].streak = (archive[todayKey].streak || 0) + 1;
-        resultEl.textContent += ' 🎉 Perfect!';
+        saveGame(true);
+      } else {
+        saveGame(false);
       }
+    } else {
+      resultEl.textContent += ' (Already submitted)';
     }
-
-    localStorage.setItem('ddg-archive', JSON.stringify(archive));
-    updateStreak(archive);
-    displayArchive(archive);
   } catch {
-    resultEl.textContent = '⚠️ Invalid expression';
+    resultEl.textContent = 'Invalid expression';
   }
 }
 
-function formatExpression(expr) {
-  return expr.split('').map(ch => {
-    const num = parseInt(ch);
-    if (!isNaN(num) && num >= 1 && num <= 6) {
-      const [bg, fg] = dieStyles[num];
-      return `<span style="color:${bg}; font-weight:bold">${ch}</span>`;
-    }
-    return ch;
-  }).join('');
+function updateResultsTable() {
+  resultsTable.innerHTML = '';
+  results.forEach((entry, index) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${index + 1}</td><td>${entry.expression}</td><td>${entry.result}</td><td>${entry.score}</td>`;
+    resultsTable.appendChild(row);
+  });
+}
+
+function saveGame(solved) {
+  const archive = JSON.parse(localStorage.getItem('ddg-archive') || '{}');
+  if (!archive[todayKey]) archive[todayKey] = [];
+  archive[todayKey].push({ expression, solved });
+  localStorage.setItem('ddg-archive', JSON.stringify(archive));
+
+  updateStreak(archive);
+  displayArchive(archive);
 }
 
 function updateStreak(archive) {
@@ -131,7 +127,8 @@ function updateStreak(archive) {
   let date = new Date();
   for (;;) {
     const key = date.toISOString().slice(0, 10);
-    if (archive[key]?.solutions?.length > 0 && archive[key].solutions.some(exp => eval(exp) === target)) {
+    const solvedToday = archive[key]?.some(entry => entry.solved);
+    if (solvedToday) {
       streak++;
       date.setDate(date.getDate() - 1);
     } else {
@@ -142,17 +139,22 @@ function updateStreak(archive) {
 }
 
 function displayArchive(archive) {
-  archiveEl.innerHTML = '<strong>Archive:</strong><br>' + Object.entries(archive).map(([date, data]) => {
-    const sols = data.solutions.length;
-    const emoji = sols > 0 ? '✅' : '❌';
-    return `${date}: ${emoji} ${sols} solution${sols === 1 ? '' : 's'}`;
+  archiveEl.innerHTML = '<strong>Archive:</strong><br>' + Object.entries(archive).map(([date, entries]) => {
+    const solved = entries.some(e => e.solved);
+    return `${date}: ${solved ? '✅' : '❌'} (${entries.length} attempts)`;
   }).join('<br>');
 }
 
+function toggleDarkMode() {
+  document.body.classList.toggle('dark');
+}
+
+// Load archive and previous data
 const archive = JSON.parse(localStorage.getItem('ddg-archive') || '{}');
-if (archive[todayKey]?.solutions) {
-  solutions = new Set(archive[todayKey].solutions);
+if (archive[todayKey]) {
+  results = archive[todayKey];
 }
 generatePuzzle();
 updateStreak(archive);
 displayArchive(archive);
+updateResultsTable();
