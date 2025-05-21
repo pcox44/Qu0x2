@@ -1,14 +1,22 @@
 body {
-  font-family: sans-serif;
+  font-family: system-ui, sans-serif;
   max-width: 800px;
   margin: auto;
   padding: 1em;
-  background: #f8f9fa;
+  background: #f5f5f5;
   color: #222;
 }
 
 h1 {
   text-align: center;
+}
+
+.rules {
+  background: #eef;
+  padding: 0.75em;
+  border-radius: 8px;
+  font-size: 0.95em;
+  margin-bottom: 1em;
 }
 
 #target-container {
@@ -21,39 +29,45 @@ h1 {
   display: flex;
   justify-content: center;
   margin: 1em 0;
+  gap: 1em;
 }
 
 .die {
-  font-size: 2em;
-  margin: 0.3em;
   width: 60px;
   height: 60px;
+  font-size: 2em;
+  font-weight: bold;
+  border-radius: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 8px;
   color: white;
-  font-weight: bold;
   cursor: pointer;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s;
+}
+
+.die:hover {
+  transform: scale(1.1);
 }
 
 .die.used {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: default;
 }
 
-.die-1 { background: red; }
-.die-2 { background: white; color: black; border: 2px solid black; }
-.die-3 { background: blue; }
-.die-4 { background: yellow; color: black; }
-.die-5 { background: green; }
+.die-1 { background: crimson; }
+.die-2 { background: white; color: black; border: 2px solid #333; }
+.die-3 { background: royalblue; }
+.die-4 { background: gold; color: black; }
+.die-5 { background: forestgreen; }
 .die-6 { background: black; color: yellow; }
 
 #expression {
-  font-size: 1.3em;
-  min-height: 30px;
+  font-size: 1.4em;
   text-align: center;
   margin: 1em 0;
+  min-height: 30px;
   word-wrap: break-word;
 }
 
@@ -65,7 +79,7 @@ h1 {
 #buttons button {
   font-size: 1.2em;
   margin: 0.3em;
-  padding: 0.6em 1em;
+  padding: 0.5em 1em;
   border: none;
   border-radius: 6px;
   background-color: #ddd;
@@ -86,18 +100,16 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1em;
+  background: white;
 }
 
 th, td {
   border: 1px solid #ccc;
-  padding: 0.5em;
+  padding: 0.6em;
   text-align: center;
 }
 
-.rules {
-  font-size: 0.9em;
-  background: #eef;
-  padding: 0.5em;
-  border-radius: 6px;
-  margin-bottom: 1em;
+#archive > div {
+  padding: 0.3em 0;
+  border-bottom: 1px solid #ddd;
 }
