@@ -1,72 +1,82 @@
 body {
   font-family: sans-serif;
+  background-color: #121212;
+  color: #f1f1f1;
   text-align: center;
-  background: #f5f5f5;
-  padding: 20px;
+  margin: 0;
+  padding: 1rem;
+}
+
+h1, h2 {
+  margin-bottom: 0.5rem;
 }
 
 #target {
-  font-size: 3em;
-  font-weight: bold;
-  color: #333;
-  margin: 20px 0;
+  font-size: 2rem;
+  margin: 1rem 0;
 }
 
 #dice-container {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin: 20px 0;
+  gap: 1rem;
+  margin: 1rem 0;
 }
 
 .die {
-  width: 50px;
-  height: 50px;
-  font-size: 1.5em;
-  font-weight: bold;
+  width: 60px;
+  height: 60px;
+  font-size: 2rem;
   display: flex;
-  align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  align-items: center;
+  border-radius: 10px;
+  color: black;
+  font-weight: bold;
   cursor: pointer;
-  user-select: none;
 }
 
-.used {
+.die.used {
   opacity: 0.4;
-  cursor: not-allowed;
 }
 
 #expression {
-  font-size: 1.5em;
-  margin: 15px 0;
-  min-height: 30px;
-  font-weight: bold;
+  font-size: 1.5rem;
+  margin: 1rem 0;
 }
 
 #buttons button {
-  margin: 6px;
-  padding: 15px 20px;
-  font-size: 1.4em;
-  border: none;
-  border-radius: 6px;
-  background-color: #eee;
-  cursor: pointer;
-  transition: background 0.2s ease;
+  font-size: 1.5rem;
+  margin: 0.2rem;
+  padding: 0.5rem 1rem;
 }
 
-#buttons button:hover {
-  background-color: #ddd;
+#result, #score, #streak {
+  margin-top: 1rem;
+  font-size: 1.2rem;
 }
 
-#result, #score, #streak, #archive {
-  margin-top: 15px;
-  font-size: 1.1em;
+#results-table {
+  margin: 1rem auto;
+  border-collapse: collapse;
+  width: 90%;
+  background-color: #1e1e1e;
 }
 
-.die.red { background: red; color: white; }
-.die.white { background: white; color: black; border: 1px solid #ccc; }
-.die.blue { background: blue; color: white; }
-.die.yellow { background: yellow; color: black; }
-.die.green { background: green; color: white; }
-.die.black { background: black; color: yellow; }
+#results-table th, #results-table td {
+  border: 1px solid #444;
+  padding: 0.5rem;
+}
+
+#toggle-dark {
+  margin-top: 2rem;
+  padding: 0.5rem 1rem;
+}
+
+/* Horse race dice colors */
+.die:nth-child(1) { background-color: red; color: white; }
+.die:nth-child(2) { background-color: white; color: black; border: 1px solid black; }
+.die:nth-child(3) { background-color: blue; color: white; }
+.die:nth-child(4) { background-color: yellow; color: black; }
+.die:nth-child(5) { background-color: green; color: white; }
+.die[value="6"] { background-color: black; color: yellow; }
