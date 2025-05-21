@@ -3,83 +3,59 @@ body {
   text-align: center;
   background: #f5f5f5;
   color: #333;
-  padding: 20px;
+  padding: 1rem;
+  max-width: 600px;
+  margin: auto;
 }
 
 h1 {
-  font-size: 2.5em;
+  margin-bottom: 0.2rem;
 }
 
 .rules {
-  max-width: 600px;
-  margin: 10px auto;
-  font-size: 1em;
-  background: #fff8dc;
-  padding: 10px;
-  border-radius: 10px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  max-width: 550px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#date-select {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+#game-number {
+  font-weight: bold;
+  font-size: 1.3rem;
+  margin: 0.4rem 0;
 }
 
 #target {
-  font-size: 2em;
-  margin: 10px;
   font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
 }
 
 #dice-container {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin: 10px;
+  margin-bottom: 1rem;
 }
 
 .die {
-  font-size: 2em;
-  padding: 15px;
   width: 50px;
-  border-radius: 10px;
-  cursor: pointer;
+  height: 50px;
+  border-radius: 8px;
+  font-size: 2.2rem;
+  font-weight: bold;
+  line-height: 50px;
   user-select: none;
-}
-
-.die.used {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-#expression {
-  font-size: 1.5em;
-  margin: 15px;
-  min-height: 30px;
-}
-
-#buttons button {
-  padding: 15px;
-  margin: 5px;
-  font-size: 1.2em;
-  border-radius: 10px;
   cursor: pointer;
+  color: white;
+  box-shadow: 1px 1px 4px #999;
+  transition: transform 0.2s ease;
 }
 
-#results-table {
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-  border-collapse: collapse;
-}
-
-#results-table th, #results-table td {
-  border: 1px solid #ccc;
-  padding: 8px;
-}
-
-#live-result, #best-score, #streak {
-  font-size: 1.2em;
-  margin: 10px;
-}
-
-/* Horse racing colors */
-.die:nth-child(1) { background-color: red; color: white; }
-.die:nth-child(2) { background-color: blue; color: white; }
-.die:nth-child(3) { background-color: green; color: white; }
-.die:nth-child(4) { background-color: orange; color: white; }
-.die:nth-child(5) { background-color: purple; color: white; }
+.die:h
