@@ -11,8 +11,10 @@
   <p class="rules">
     Use all five dice exactly once with any combination of operations and parentheses to get as close as possible to the target number (1–100). Dice may be used in any order, but numbers must be separated by operators — no multi-digit numbers. You may try as many times as you'd like. Your score is the absolute difference from the target. A perfect solution (score 0) increases your streak.
   </p>
+
   <div id="target-container"><strong>Target:</strong> <span id="target"></span></div>
   <div id="dice-container"></div>
+
   <div id="expression"></div>
   <div id="buttons">
     <div id="operator-buttons">
@@ -27,6 +29,7 @@
     <button onclick="clearExpression()">Clear</button>
     <button onclick="submitExpression()">Submit</button>
   </div>
+
   <div id="live-result"></div>
   <div id="score"></div>
   <div id="streak"></div>
