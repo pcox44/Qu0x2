@@ -1,350 +1,219 @@
-const state = {
-  dice: [],
-  usedDiceIndices: new Set(),
-  expression: "",
-  target: 0,
-  archive: {},
-  streak: 0,
-  streakLastDay: null,
-};
+// script.js
 
-function generateDice() {
-  // Five dice: 1–6 each, random colors assigned consistently
-  // Just random numbers 1-6 for each die:
-  return [
-    Math.floor(Math.random() * 6) + 1,
-    Math.floor(Math.random() * 6) + 1,
-    Math.floor(Math.random() * 6) + 1,
-    Math.floor(Math.random() * 6) + 1,
-    Math.floor(Math.random() * 6) + 1,
-  ];
+// Constants
+const NUM_DICE = 5;
+const MAX_DICE_VALUE = 6;
+
+// Elements
+const diceContainer = document.getElementById('dice-container');
+const targetNumberSpan = document.getElementById('target-number');
+const inputField = document.getElementById('input-field');
+const messageDiv = document.getElementById('message');
+const scoreSpan = document.getElementById('score');
+const attemptsSpan = document.getElementById('attempts');
+const backspaceBtn = document.getElementById('backspace-btn');
+const clearBtn = document.getElementById('clear-btn');
+
+// State
+let diceValues = [];
+let targetNumber;
+let attempts = 0;
+
+// Helpers
+
+// Get current date string in Eastern Time (YYYY-MM-DD)
+function getEasternDateString() {
+  // Current time in UTC
+  const now = new Date();
+
+  // Convert to milliseconds offset for ET (UTC-4 or UTC-5 depending on DST)
+  // Use Intl API for timezone conversion
+  const options = { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' };
+  const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(now);
+  
+  let year, month, day;
+  for (const part of parts) {
+    if (part.type === 'year') year = part.value;
+    else if (part.type === 'month') month = part.value;
+    else if (part.type === 'day') day = part.value;
+  }
+  return `${year}-${month}-${day}`;
 }
 
-const diceColors = ["red", "blue", "green", "orange", "purple"];
-
-function generateTarget(dice, dateStr) {
-  // Simple seeded hash to produce target number between 1 and 100
-  // Sum dice + char codes from date string + modulo
-  let seed = dice.reduce((a, b) => a + b, 0);
-  for (const ch of dateStr) seed += ch.charCodeAt(0);
-  return (seed * 7) % 100 + 1;
+// Generate a seed from a string (date string here)
+function cyrb128(str) {
+  let h1 = 1779033703, h2 = 3144134277,
+      h3 = 1013904242, h4 = 2773480762;
+  for (let i = 0, k; i < str.length; i++) {
+      k = str.charCodeAt(i);
+      h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+      h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+      h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+      h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+  }
+  h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+  h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+  h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+  h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+  return [(h1^h2^h3^h4) >>> 0];
 }
 
-function formatDate() {
-  const d = new Date();
-  return d.toISOString().slice(0, 10);
+// Seeded random number generator (Mulberry32)
+function mulberry32(seed) {
+  return function() {
+      let t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
 }
 
+// Generate dice values deterministically based on date string
+function generateDice(dateStr) {
+  const seed = cyrb128(dateStr)[0];
+  const rand = mulberry32(seed);
+  const dice = [];
+  for (let i = 0; i < NUM_DICE; i++) {
+    dice.push(1 + Math.floor(rand() * MAX_DICE_VALUE));
+  }
+  return dice;
+}
+
+// Generate target number deterministically based on date string (1 to 100)
+function generateTargetNumber(dateStr) {
+  const seed = cyrb128(dateStr)[0] ^ 0xabcdef; // Different seed than dice
+  const rand = mulberry32(seed);
+  return 1 + Math.floor(rand() * 100);
+}
+
+// Render dice as colored dice faces
 function renderDice() {
-  const container = document.getElementById("dice-container");
-  container.innerHTML = "";
-  state.dice.forEach((num, idx) => {
-    const die = document.createElement("div");
-    die.className = "die " + diceColors[idx % diceColors.length];
-    if (state.usedDiceIndices.has(idx)) die.classList.add("used");
-    die.textContent = num;
-    die.title = `Die ${idx + 1}: ${num}`;
-    die.onclick = () => useDie(idx);
-    container.appendChild(die);
+  diceContainer.innerHTML = '';
+  diceValues.forEach((val, i) => {
+    const dieDiv = document.createElement('div');
+    dieDiv.className = `die die-${val}`;
+    dieDiv.textContent = val;
+    diceContainer.appendChild(dieDiv);
   });
 }
 
-function useDie(dieIdx) {
-  if (state.usedDiceIndices.has(dieIdx)) return; // already used
-  const dieNum = state.dice[dieIdx];
-
-  // Prevent concatenation of numbers by checking last char in expression
-  if (state.expression.length > 0) {
-    const lastChar = state.expression.slice(-1);
-    if (/\d/.test(lastChar)) return; // disallow direct digit after digit
-  }
-
-  state.expression += dieNum.toString();
-  state.usedDiceIndices.add(dieIdx);
-  renderDice();
-  updateExpressionAndResult();
+// Update displayed target number
+function renderTarget() {
+  targetNumberSpan.textContent = targetNumber;
 }
 
-function addOp(op) {
-  if (state.expression.length === 0) return;
-  const lastChar = state.expression[state.expression.length - 1];
-  if ("+-*/()".includes(lastChar)) return; // prevent consecutive operators
-  state.expression += op;
-  updateExpressionAndResult();
+// Update score and attempts display
+function renderStats(score) {
+  scoreSpan.textContent = score;
+  attemptsSpan.textContent = attempts;
 }
 
-function backspace() {
-  if (state.expression.length === 0) return;
-  const lastChar = state.expression.slice(-1);
-  state.expression = state.expression.slice(0, -1);
-
-  // If last char was a digit, recalculate used dice indices
-  if (/\d/.test(lastChar)) {
-    // Count dice numbers used currently in expression:
-    const usedNums = Array(5).fill(0);
-    for (let i = 0; i < state.expression.length; i++) {
-      const ch = state.expression[i];
-      if (/\d/.test(ch)) {
-        for (let di = 0; di < state.dice.length; di++) {
-          if (state.dice[di] === Number(ch)) usedNums[di]++;
-        }
-      }
-    }
-    // Reset usedDiceIndices based on counts:
-    state.usedDiceIndices.clear();
-    // We'll reassign dice used indices based on expression numbers (the first occurrence)
-    let exprNums = state.expression.match(/\d/g) || [];
-    const diceCopy = [...state.dice];
-    exprNums.forEach(n => {
-      for (let di = 0; di < diceCopy.length; di++) {
-        if (diceCopy[di] === Number(n)) {
-          state.usedDiceIndices.add(di);
-          diceCopy[di] = null; // so we don't use same die twice
-          break;
-        }
-      }
-    });
-  }
-  renderDice();
-  updateExpressionAndResult();
+// Show message (success or error)
+function showMessage(msg, success = false) {
+  messageDiv.textContent = msg;
+  messageDiv.style.color = success ? 'green' : 'red';
 }
 
-function clearExpression() {
-  state.expression = "";
-  state.usedDiceIndices.clear();
-  renderDice();
-  updateExpressionAndResult();
+// Compute score: absolute difference between user's evaluated expression and target
+function computeScore(userAnswer) {
+  return Math.abs(targetNumber - userAnswer);
 }
 
-function safeEval(expr) {
-  try {
-    if (!/^[\d+\-*/()\s]+$/.test(expr)) return null;
-    const val = eval(expr);
-    if (typeof val !== "number" || !isFinite(val)) return null;
-    return val;
-  } catch {
-    return null;
-  }
-}
-
-function updateExpressionAndResult() {
-  const exprEl = document.getElementById("expression");
-  exprEl.value = state.expression || "";
-
-  if (state.expression.length === 0) {
-    updateLiveResult("-");
-    updateScoreDisplay("-");
-    return;
-  }
-
-  const val = safeEval(state.expression);
-  if (val === null) {
-    updateLiveResult("Invalid");
-    updateScoreDisplay("-");
-    return;
-  }
-
-  updateLiveResult(Math.round(val));
-  updateScoreDisplay(Math.abs(Math.round(val) - state.target));
-}
-
-function updateLiveResult(val) {
-  const liveResultEl = document.getElementById("live-result");
-  if (typeof val === "number") {
-    liveResultEl.textContent = `Result: ${val}`;
-  } else {
-    liveResultEl.textContent = `Result: ${val}`;
-  }
-}
-
-function updateScoreDisplay(score) {
-  const scoreEl = document.getElementById("score-display");
-  if (typeof score === "number") {
-    scoreEl.textContent = `Score: ${score}`;
-  } else {
-    scoreEl.textContent = `Score: ${score}`;
-  }
-}
-
-function submitExpression() {
-  if (state.expression.length === 0) return alert("Enter an expression first!");
-
-  if (state.usedDiceIndices.size !== state.dice.length) {
-    return alert("You must use each die exactly once!");
-  }
-
-  if (!isValidExpression(state.expression)) {
-    return alert("Invalid expression! You cannot combine dice digits directly without operator or parenthesis.");
-  }
-
-  const result = safeEval(state.expression);
-  if (result === null) return alert("Invalid expression.");
-
-  const roundedResult = Math.round(result);
-  const score = Math.abs(roundedResult - state.target);
-
-  const today = formatDate();
-  if (!state.archive[today]) {
-    state.archive[today] = { target: state.target, attempts: [] };
-  }
-  state.archive[today].attempts.push({
-    expression: state.expression,
-    result: roundedResult,
-    score,
-  });
-
-  if (score === 0) {
-    const lastDay = state.streakLastDay;
-    const todayDate = new Date(today);
-    const yesterdayDate = new Date(todayDate);
-    yesterdayDate.setDate(todayDate.getDate() - 1);
-
-    if (lastDay === formatDate(yesterdayDate)) {
-      state.streak++;
-    } else if (lastDay !== today) {
-      state.streak = 1;
-    }
-    state.streakLastDay = today;
-  }
-
-  clearExpression();
-  saveState();
-  renderArchive();
-  updateStreakDisplay();
-  updatePerfectCount();
-}
-
+// Validate user input expression: only allow digits, +, -, *, /, parentheses, spaces
 function isValidExpression(expr) {
-  const noSpaces = expr.replace(/\s+/g, "");
-  const numbers = noSpaces.match(/\d+/g) || [];
-  for (const numStr of numbers) {
-    if (numStr.length > 1) {
-      return false;
-    }
-  }
-  return true;
+  return /^[0-9+\-*/().\s]+$/.test(expr);
 }
 
-function renderArchive() {
-  const archiveEl = document.getElementById("archive");
-  archiveEl.innerHTML = "";
-
-  const today = formatDate();
-  if (!state.archive[today]) {
-    archiveEl.textContent = "No attempts yet today.";
-    return;
+// Evaluate user input expression safely
+function safeEval(expr) {
+  if (!isValidExpression(expr)) {
+    throw new Error('Invalid characters in expression.');
   }
-
-  const dayData = state.archive[today];
-  const header = document.createElement("div");
-  header.textContent = `Attempts for ${today} (Target: ${dayData.target}):`;
-  header.style.fontWeight = "bold";
-  header.style.marginBottom = "6px";
-  archiveEl.appendChild(header);
-
-  dayData.attempts.forEach((attempt, i) => {
-    const div = document.createElement("div");
-    div.className = "archive-attempt";
-    div.textContent = `${i + 1}. ${attempt.expression} = ${attempt.result} (Score: ${attempt.score})`;
-    if (attempt.score === 0) {
-      div.classList.add("archive-perfect");
-    }
-    archiveEl.appendChild(div);
-  });
+  // Evaluate with Function constructor
+  // Using eval is generally unsafe but here we restrict input
+  return Function(`"use strict";return (${expr})`)();
 }
 
-function updatePerfectCount() {
-  const perfectCountEl = document.getElementById("perfect-count");
-  const today = formatDate();
-  if (!state.archive[today]) {
-    perfectCountEl.textContent = "";
-    return;
-  }
-  const perfects = state.archive[today].attempts.filter(a => a.score === 0).length;
-  if (perfects === 0) {
-    perfectCountEl.textContent = "No Perfect Solutions Yet";
-  } else if (perfects === 1) {
-    perfectCountEl.textContent = "1 Perfect Solution!";
-  } else {
-    perfectCountEl.textContent = `${perfects} Perfect Solutions!`;
-  }
-}
-
-function updateStreakDisplay() {
-  const streakEl = document.getElementById("streak");
-  streakEl.textContent = `Current Streak: ${state.streak}`;
-}
-
-function saveState() {
-  try {
-    localStorage.setItem("dailyDiceState", JSON.stringify({
-      archive: state.archive,
-      streak: state.streak,
-      streakLastDay: state.streakLastDay,
-    }));
-  } catch (e) {
-    // ignore localStorage errors
-  }
-}
-
-function loadState() {
-  try {
-    const saved = localStorage.getItem("dailyDiceState");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.archive) state.archive = parsed.archive;
-      if (typeof parsed.streak === "number") state.streak = parsed.streak;
-      if (parsed.streakLastDay) state.streakLastDay = parsed.streakLastDay;
-    }
-  } catch (e) {
-    // ignore load errors
-  }
-}
-
-function setup() {
-  loadState();
-
-  // Setup dice and target for today:
-  const today = formatDate();
-
-  if (state.archive[today]) {
-    // Use same dice & target if saved attempts exist:
-    state.target = state.archive[today].target;
-    // If we want to also keep dice fixed for day, store dice in archive too:
-    // But currently dice are not stored — so let's store dice in archive next.
-
-    if (state.archive[today].dice) {
-      state.dice = state.archive[today].dice;
-    } else {
-      // fallback if dice not saved:
-      state.dice = generateDice();
-      state.archive[today].dice = state.dice;
-      saveState();
-    }
-  } else {
-    // New day: generate dice and target:
-    state.dice = generateDice();
-    state.target = generateTarget(state.dice, today);
-    // Save dice and target:
-    state.archive[today] = { target: state.target, attempts: [], dice: state.dice };
-    saveState();
-  }
-
+// Initialize game for the day
+function initGame() {
+  const today = getEasternDateString();
+  diceValues = generateDice(today);
+  targetNumber = generateTargetNumber(today);
+  attempts = 0;
   renderDice();
-  document.getElementById("target-number").textContent = state.target;
-  updateExpressionAndResult();
-  renderArchive();
-  updatePerfectCount();
-  updateStreakDisplay();
-
-  // Setup buttons
-  document.querySelectorAll(".btn-op").forEach(btn => {
-    btn.onclick = () => addOp(btn.textContent);
-  });
-
-  document.getElementById("btn-backspace").onclick = backspace;
-  document.getElementById("btn-clear").onclick = clearExpression;
-  document.getElementById("btn-submit").onclick = submitExpression;
+  renderTarget();
+  inputField.value = '';
+  renderStats('-');
+  showMessage('');
 }
 
-setup();
+// Event Handlers
+
+// Handle user submitting an attempt (on Enter key)
+inputField.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const input = inputField.value.trim();
+    if (input === '') {
+      showMessage('Please enter an expression.');
+      return;
+    }
+    try {
+      const result = safeEval(input);
+      if (typeof result !== 'number' || isNaN(result) || !isFinite(result)) {
+        showMessage('Expression must evaluate to a finite number.');
+        return;
+      }
+      // Check dice usage: each die value used exactly once
+      // Extract numbers from expression
+      const nums = input.match(/\d+/g);
+      if (!nums) {
+        showMessage('Expression must use dice values.');
+        return;
+      }
+      // Count dice values and numbers used
+      const diceCopy = [...diceValues];
+      for (const numStr of nums) {
+        const num = parseInt(numStr, 10);
+        const index = diceCopy.indexOf(num);
+        if (index === -1) {
+          showMessage(`Invalid usage: number ${num} not in dice or already used.`);
+          return;
+        }
+        diceCopy.splice(index, 1);
+      }
+      if (diceCopy.length > 0) {
+        showMessage(`You must use all dice values exactly once.`);
+        return;
+      }
+      attempts++;
+      const score = computeScore(result);
+      renderStats(score);
+      if (score === 0) {
+        showMessage('Perfect! You matched the target exactly!', true);
+      } else {
+        showMessage(`Close! Your result is ${result}. Keep trying!`, false);
+      }
+      inputField.value = '';
+    } catch (err) {
+      showMessage('Invalid expression. Please try again.');
+    }
+  }
+});
+
+// Backspace button handler
+backspaceBtn.addEventListener('click', () => {
+  inputField.value = inputField.value.slice(0, -1);
+  showMessage('');
+});
+
+// Clear button handler
+clearBtn.addEventListener('click', () => {
+  inputField.value = '';
+  showMessage('');
+});
+
+// Initialize the game when page loads
+window.addEventListener('load', () => {
+  initGame();
+});
