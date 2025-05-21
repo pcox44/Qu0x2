@@ -209,3 +209,91 @@ function saveProgress(solved, diff = null) {
   if (solved) {
     updateStreakStorage();
   }
+
+  updateStreak();
+  updateArchive();
+}
+
+function loadProgress() {
+  const key = `dailyDiceGame-${seedFromDate()}`;
+  const dataRaw = localStorage.getItem(key);
+  if (!dataRaw) return;
+  const data = JSON.parse(dataRaw);
+  expression = data.expression || "";
+  updateExpression();
+
+  if (data.solved) {
+    resultDiv.textContent = "🎉 You solved today's puzzle!";
+    updateScore(0);
+    usedDice = [true, true, true, true, true];
+    updateDiceStyles();
+  } else if (data.diff !== null) {
+    updateScore(data.diff);
+    resultDiv.textContent = "Result loaded from saved progress.";
+  }
+}
+
+function updateStreakStorage() {
+  const streakKey = "dailyDiceGame-streak";
+  let streakData = JSON.parse(localStorage.getItem(streakKey)) || {lastDate: 0, count: 0};
+
+  const todaySeed = seedFromDate();
+
+  if (streakData.lastDate === todaySeed - 1) {
+    streakData.count++;
+  } else if (streakData.lastDate !== todaySeed) {
+    streakData.count = 1;
+  }
+  streakData.lastDate = todaySeed;
+
+  localStorage.setItem(streakKey, JSON.stringify(streakData));
+}
+
+function updateStreak() {
+  const streakKey = "dailyDiceGame-streak";
+  let streakData = JSON.parse(localStorage.getItem(streakKey)) || {count: 0};
+  streakDiv.textContent = `Current streak: ${streakData.count || 0} day(s)`;
+}
+
+function updateArchive() {
+  // Show list of past games with their score if solved
+  const archiveKey = "dailyDiceGame-archive";
+  let archiveData = JSON.parse(localStorage.getItem(archiveKey)) || [];
+
+  // Add current game result to archive if solved
+  const todaySeed = seedFromDate();
+  const currentKey = `dailyDiceGame-${todaySeed}`;
+  const todayDataRaw = localStorage.getItem(currentKey);
+  if (todayDataRaw) {
+    const todayData = JSON.parse(todayDataRaw);
+    if (todayData.solved) {
+      // Check if already in archive
+      if (!archiveData.some(e => e.date === todaySeed)) {
+        archiveData.push({date: todaySeed, score: 0});
+        localStorage.setItem(archiveKey, JSON.stringify(archiveData));
+      }
+    }
+  }
+
+  // Display archive list
+  archiveDiv.innerHTML = "<strong>Archive of solved puzzles:</strong><br>";
+  if (archiveData.length === 0) {
+    archiveDiv.innerHTML += "No puzzles solved yet.";
+    return;
+  }
+  archiveData.sort((a,b) => b.date - a.date);
+  archiveData.forEach(entry => {
+    const dateStr = entry.date.toString();
+    const formattedDate = dateStr.slice(0,4) + "-" + dateStr.slice(4,6) + "-" + dateStr.slice(6,8);
+    archiveDiv.innerHTML += `${formattedDate} - Score: ${entry.score}<br>`;
+  });
+}
+
+// === Public API for buttons ===
+window.appendOperator = appendOperator;
+window.backspace = backspace;
+window.clearExpression = clearExpression;
+window.checkAnswer = checkAnswer;
+
+// === Initialize on load ===
+window.onload = initGame;
