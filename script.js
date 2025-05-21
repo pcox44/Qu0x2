@@ -11,12 +11,12 @@ let usedDice = [];
 let dice = [];
 let target = 0;
 let todayKey = new Date().toISOString().slice(0, 10);
+let solutions = new Set();
 
 function seedFromDate() {
   const now = new Date();
-  now.setUTCHours(now.getUTCHours() - 4); // Eastern Time
-  const seed = parseInt(now.toISOString().slice(0, 10).replace(/-/g, ''), 10);
-  return seed;
+  now.setUTCHours(now.getUTCHours() - 4); // Eastern time
+  return parseInt(now.toISOString().slice(0, 10).replace(/-/g, ''));
 }
 
 function seededRandom(seed) {
@@ -41,7 +41,20 @@ function render() {
     const die = document.createElement('div');
     die.className = 'die';
     die.textContent = value;
-    die.style.backgroundColor = ['#FF6B6B','#6BCB77','#4D96FF','#FFD93D','#845EC2'][i];
+
+    // Horse racing-style dice backgrounds
+    const styles = {
+      1: ['red', 'white'],
+      2: ['white', 'black'],
+      3: ['blue', 'white'],
+      4: ['yellow', 'black'],
+      5: ['green', 'white'],
+      6: ['black', 'yellow']
+    };
+    const [bg, color] = styles[value];
+    die.style.backgroundColor = bg;
+    die.style.color = color;
+
     if (usedDice[i]) die.classList.add('used');
     die.onclick = () => useDie(i);
     diceContainer.appendChild(die);
@@ -73,49 +86,36 @@ function clearExpression() {
 }
 
 function normalize(expr) {
-  return expr
-    .split(/(\D)/)
-    .filter(Boolean)
-    .map(x => /\d/.test(x) ? +x : x)
-    .map(x => typeof x === 'number' ? x : ` ${x} `)
-    .join('')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function sortNumbers(expr) {
-  const parts = expr.split(/[\+\-\*\/]/).map(x => x.trim()).filter(Boolean);
-  return parts.sort((a, b) => a - b).join(',');
+  return expr.replace(/\s+/g, '').split('').sort().join('');
 }
 
 function submitExpression() {
   try {
     const result = eval(expression);
+    if (usedDice.filter(x => x).length !== 5) {
+      resultEl.textContent = '❌ Use all dice';
+      return;
+    }
     const score = Math.abs(target - result);
     resultEl.textContent = `Result: ${result}`;
     scoreEl.textContent = `Score: ${score}`;
+    const normalized = normalize(expression);
+
     const archive = JSON.parse(localStorage.getItem('ddg-archive') || '{}');
-
-    if (!archive[todayKey]) {
-      archive[todayKey] = { solved: false, expressions: [] };
-    }
-
-    if (score === 0) {
-      const normalized = normalize(expression);
-      const key = sortNumbers(normalized);
-      if (!archive[todayKey].expressions.includes(key)) {
-        archive[todayKey].expressions.push(key);
+    archive[todayKey] = archive[todayKey] || { solutions: [], streak: 0 };
+    if (!archive[todayKey].solutions.includes(normalized)) {
+      archive[todayKey].solutions.push(normalized);
+      if (score === 0) {
+        archive[todayKey].streak = (archive[todayKey].streak || 0) + 1;
+        resultEl.textContent += ' 🎉 Perfect!';
       }
-
-      archive[todayKey].solved = true;
-      resultEl.textContent += ' 🎉 Congratulations!';
     }
 
     localStorage.setItem('ddg-archive', JSON.stringify(archive));
     updateStreak(archive);
     displayArchive(archive);
   } catch {
-    resultEl.textContent = 'Invalid expression';
+    resultEl.textContent = '⚠️ Invalid expression';
   }
 }
 
@@ -124,7 +124,7 @@ function updateStreak(archive) {
   let date = new Date();
   for (;;) {
     const key = date.toISOString().slice(0, 10);
-    if (archive[key]?.solved) {
+    if (archive[key]?.solutions?.length > 0 && archive[key].solutions.some(exp => eval(exp) === target)) {
       streak++;
       date.setDate(date.getDate() - 1);
     } else {
@@ -136,13 +136,17 @@ function updateStreak(archive) {
 
 function displayArchive(archive) {
   archiveEl.innerHTML = '<strong>Archive:</strong><br>' + Object.entries(archive).map(([date, data]) => {
-    const count = data.expressions ? data.expressions.length : 0;
-    return `${date}: ${data.solved ? '✅' : '❌'} (${count} solution${count === 1 ? '' : 's'})`;
+    const sols = data.solutions.length;
+    const emoji = sols > 0 ? '✅' : '❌';
+    return `${date}: ${emoji} ${sols} solution${sols === 1 ? '' : 's'}`;
   }).join('<br>');
 }
 
-// Load
+// Load archive and game
 const archive = JSON.parse(localStorage.getItem('ddg-archive') || '{}');
+if (archive[todayKey]?.solutions) {
+  solutions = new Set(archive[todayKey].solutions);
+}
 generatePuzzle();
 updateStreak(archive);
 displayArchive(archive);
