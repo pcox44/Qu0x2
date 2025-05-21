@@ -3,52 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🎲 Daily Dice Game</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Daily Dice Game</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>🎲 Daily Dice Game</h1>
+  <main>
+    <h1>🎲 Daily Dice Game 🎯</h1>
 
-  <section id="rules">
-    <h2>How to Play</h2>
-    <p>
-      Use all five dice values <strong>exactly once</strong> in your expression.<br />
-      Operations (+, -, *, /) and parentheses () are free to use as much as you want.<br />
-      You <strong>cannot combine dice values to form multi-digit numbers</strong> (e.g., 4 and 5 cannot be typed as "45").<br />
-      Your score is the absolute difference between your expression result and the target number.<br />
-      The lower your score, the better! A perfect score is 0 — exactly matching the target.<br />
-      You can try as many expressions as you like each day.
-    </p>
-  </section>
+    <section id="game">
+      <div id="target" aria-live="polite" aria-atomic="true" class="target">Target: --</div>
 
-  <div id="target" aria-live="polite"></div>
-  <div id="dice-container" aria-label="Dice values"></div>
+      <div id="dice-buttons" aria-label="Dice values" role="group"></div>
 
-  <div id="expression" aria-live="polite" aria-label="Current expression"></div>
+      <div id="operator-buttons" aria-label="Operator buttons" role="group">
+        <button id="btn-op-+" aria-label="Add">+</button>
+        <button id="btn-op--" aria-label="Subtract">−</button>
+        <button id="btn-op-*" aria-label="Multiply">×</button>
+        <button id="btn-op-/" aria-label="Divide">÷</button>
+        <button id="btn-op-(" aria-label="Open parenthesis">(</button>
+        <button id="btn-op-)" aria-label="Close parenthesis">)</button>
+      </div>
 
-  <div id="buttons">
-    <div id="dice-buttons"></div>
-    <div id="op-buttons">
-      <button onclick="addOp('+')">+</button>
-      <button onclick="addOp('-')">−</button>
-      <button onclick="addOp('*')">×</button>
-      <button onclick="addOp('/')">÷</button>
-      <button onclick="addOp('(')">(</button>
-      <button onclick="addOp(')')">)</button>
-      <button onclick="backspace()">⌫</button>
-      <button onclick="clearExpression()">Clear</button>
-      <button onclick="submitExpression()">Submit</button>
-    </div>
-  </div>
+      <div id="expression-container" aria-live="polite" aria-atomic="true">
+        <div id="expression" class="expression">...</div>
+        <div id="live-result" class="live-result">Current Result: -</div>
+      </div>
 
-  <div id="live-result"></div>
-  <div id="score"></div>
-  <div id="streak"></div>
+      <div id="buttons">
+        <button id="btn-backspace" aria-label="Backspace">⌫ Backspace</button>
+        <button id="btn-clear" aria-label="Clear expression">Clear</button>
+        <button id="btn-submit" aria-label="Submit expression">Submit</button>
+      </div>
 
-  <section>
-    <h2>Archive (Last 30 Days)</h2>
-    <div id="archive"></div>
-  </section>
+      <div id="score" class="score" aria-live="polite" aria-atomic="true">No submissions yet.</div>
+      <div id="streak" class="streak">Streak: 0 perfect days</div>
+    </section>
+
+    <section id="archive-section">
+      <h2>Archive (Last 30 days)</h2>
+      <div id="archive" aria-live="polite" aria-atomic="true" role="list"></div>
+    </section>
+
+    <section id="rules">
+      <h2>How to Play</h2>
+      <p>
+        You have <strong>five dice</strong> with values 1–6 each day.<br />
+        Use <strong>each dice value exactly once</strong> in a math expression.<br />
+        Use +, −, ×, ÷, and parentheses freely.<br />
+        You <strong>cannot concatenate dice</strong> to form multi-digit numbers (e.g., 4 and 5 can’t become 45).<br />
+        Your score is the absolute difference between your expression's result (rounded to nearest integer) and the target number (1–100).<br />
+        Score 0 means a perfect match!<br />
+        Unlimited attempts — try your best.<br />
+        Use Backspace and Clear buttons to edit.<br />
+        Track your streak of consecutive perfect days and see all your past attempts below!
+      </p>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
