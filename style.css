@@ -1,92 +1,88 @@
-/* style.css */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0;
-  padding: 0;
-  background: #f2f2f2;
-  color: #333;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 100vh;
-  padding: 20px;
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: auto;
+  text-align: center;
+  background: #f0f4f8;
+  padding: 1rem;
 }
 
-h1 {
-  margin-top: 10px;
-  font-size: 2.5rem;
-  color: #444;
-}
-
-#target {
+#target-container {
   font-size: 1.5rem;
-  margin: 20px 0;
+  margin-bottom: 1rem;
+  font-weight: bold;
 }
 
 #dice-container {
   display: flex;
-  gap: 10px;
-  margin: 10px 0;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .die {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
   font-size: 1.5rem;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  color: white;
   font-weight: bold;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.1s;
+  color: white;
+  border-radius: 8px;
+  user-select: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
 }
 
 .die.used {
-  text-decoration: line-through;
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: default;
+  text-decoration: line-through;
+  transform: scale(0.95);
 }
 
-#buttons {
-  margin: 15px 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-}
-
-button {
-  padding: 10px 15px;
-  font-size: 1rem;
-  border: none;
+#expression-container {
+  margin: 1rem 0;
+  min-height: 40px;
+  font-size: 1.4rem;
+  border: 1px solid #bbb;
+  background: white;
+  padding: 0.5rem;
   border-radius: 6px;
-  background: #444;
+  user-select: text;
+  word-wrap: break-word;
+  min-height: 2.5rem;
+}
+
+#buttons-container button {
+  font-size: 1.2rem;
+  padding: 0.5rem 0.8rem;
+  margin: 0.25rem;
+  border-radius: 6px;
+  border: none;
+  background: #4a90e2;
   color: white;
   cursor: pointer;
-  transition: background 0.2s;
+  user-select: none;
+  min-width: 70px;
+  transition: background-color 0.2s ease;
 }
 
-button:hover {
-  background: #000;
+#buttons-container button:hover {
+  background-color: #357ABD;
 }
 
-#expression, #result, #score, #streak {
-  margin-top: 10px;
+#result, #score, #streak, #archive {
+  margin-top: 1rem;
   font-size: 1.2rem;
-  text-align: center;
+  min-height: 1.2rem;
 }
 
 #archive {
-  margin-top: 20px;
-  max-width: 90%;
-  font-size: 0.9rem;
-  background: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  margin-top: 2rem;
+  font-size: 1rem;
+  text-align: left;
+  max-height: 150px;
+  overflow-y: auto;
+  border-top: 1px solid #ccc;
+  padding-top: 0.5rem;
 }
