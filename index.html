@@ -1,32 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Daily Dice Game</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Daily Dice Game</title>
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>Daily Dice Game</h1>
-  <div id="target">Target Number: </div>
-  <div id="dice-container"></div>
-  <div id="expression" aria-live="polite" aria-label="Current Expression"></div>
-  <div id="buttons">
-    <button class="operator" data-op="+">+</button>
-    <button class="operator" data-op="-">−</button>
-    <button class="operator" data-op="*">×</button>
-    <button class="operator" data-op="/">÷</button>
-    <button class="operator" data-op="(">(</button>
-    <button class="operator" data-op=")">)</button>
-    <button id="backspace">Backspace</button>
-    <button id="clear">Clear</button>
-    <button id="submit">Submit</button>
-  </div>
-  <div id="result" aria-live="polite"></div>
-  <div id="score"></div>
-  <div id="streak"></div>
-  <div id="archive"></div>
+  <div class="container">
+    <h1>Daily Dice Game</h1>
+    <p>Use all five dice values exactly once with any math operations to get close to the target number.</p>
+    <div id="dice-container" class="dice-container"></div>
 
-  <script src="script.js"></script>
+    <div id="input-container" class="input-container">
+      <input type="text" id="answer-input" autocomplete="off" autofocus />
+      <button id="backspace-btn">← Backspace</button>
+      <button id="clear-btn">Clear</button>
+      <button id="submit-btn">Submit</button>
+    </div>
+
+    <div id="result-message" class="result-message"></div>
+    <div id="score-message" class="score-message"></div>
+
+    <div id="archive-section" class="archive-section">
+      <h2>Past 30 Days Archive</h2>
+      <ul id="archive-list"></ul>
+    </div>
+  </div>
+
+<script src="script.js"></script>
 </body>
 </html>
