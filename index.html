@@ -1,53 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Daily Dice Game</title>
-<link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily Dice Game</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Daily Dice Game</h1>
-    <p id="blurb">
-      Use each of the 5 dice exactly once to create an expression as close as possible to the target number.<br/>
-      You can use +, -, *, /, and parentheses freely.<br/>
-      The score is the absolute difference between your result and the target.<br/>
-      Try to get a perfect solution (score 0) and build your streak!
-    </p>
+  <h1>🎲 Daily Dice Game</h1>
+  <div id="target" class="target"></div>
 
-    <div id="target-container">
-      Target Number: <span id="target-number"></span>
-    </div>
+  <div id="dice-container" class="dice-container"></div>
 
-    <div id="dice-container"></div>
+  <div id="expression" class="expression" contenteditable="false" spellcheck="false"></div>
+  
+  <div id="live-result" class="live-result"></div>
+  <div id="score-display" class="score-display"></div>
 
-    <input type="text" id="expression" readonly placeholder="Your expression" />
-
-    <div id="live-result">Result: -</div>
-    <div id="score-display">Score: -</div>
-
-    <div class="buttons-row">
-      <button class="btn-op btn-small">(</button>
-      <button class="btn-op btn-small">)</button>
-      <button class="btn-op btn-small">+</button>
-      <button class="btn-op btn-small">-</button>
-      <button class="btn-op btn-small">*</button>
-      <button class="btn-op btn-small">/</button>
-    </div>
-
-    <div class="buttons-row">
-      <button id="btn-backspace">Backspace</button>
-      <button id="btn-clear">Clear</button>
-      <button id="btn-submit">Submit</button>
-    </div>
-
-    <div id="streak">Current Streak: 0</div>
-
-    <h2>Today's Attempts</h2>
-    <div id="archive"></div>
+  <div id="buttons" class="buttons">
+    <button onclick="addOp('+')">+</button>
+    <button onclick="addOp('-')">-</button>
+    <button onclick="addOp('*')">*</button>
+    <button onclick="addOp('/')">/</button>
+    <button onclick="addOp('(')">(</button>
+    <button onclick="addOp(')')">)</button>
+    <button onclick="backspace()">⌫</button>
+    <button onclick="clearExpression()">Clear</button>
+    <button onclick="submitExpression()">Submit</button>
   </div>
 
-<script src="script.js"></script>
+  <h2>Results</h2>
+  <table id="results-table">
+    <thead>
+      <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Archive (last 30 days)</h2>
+  <div id="archive" class="archive"></div>
+
+  <script src="script.js"></script>
 </body>
 </html>
