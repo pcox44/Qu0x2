@@ -33,7 +33,6 @@ let targetNumber;
 let diceValues = [];
 let usedDice = [false, false, false, false, false];
 let expression = "";
-const diceColors = ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"];
 
 const diceContainer = document.getElementById("dice-container");
 const targetSpan = document.getElementById("target-number");
@@ -63,11 +62,12 @@ function initGame() {
     const die = document.createElement("div");
     die.classList.add("die");
     die.textContent = value;
-    die.style.backgroundColor = diceColors[i % diceColors.length];
     die.dataset.index = i;
     die.addEventListener("click", () => toggleDieUsage(i));
     diceContainer.appendChild(die);
   });
+
+  updateDiceStyles();
 
   loadProgress();
   updateScore("");
@@ -79,6 +79,8 @@ function initGame() {
   document.getElementById("btn-sub").addEventListener("click", () => appendOperator("-"));
   document.getElementById("btn-mul").addEventListener("click", () => appendOperator("*"));
   document.getElementById("btn-div").addEventListener("click", () => appendOperator("/"));
+  document.getElementById("btn-open-paren").addEventListener("click", () => appendOperator("("));
+  document.getElementById("btn-close-paren").addEventListener("click", () => appendOperator(")"));
   document.getElementById("btn-backspace").addEventListener("click", backspace);
   document.getElementById("btn-clear").addEventListener("click", clearExpression);
   document.getElementById("btn-submit").addEventListener("click", checkAnswer);
@@ -104,81 +106,103 @@ function appendNumber(num) {
 }
 
 function appendOperator(op) {
-  if (expression.length === 0) return; // prevent operator first
-  const lastChar = expression[expression.length - 1];
-  if ("+-*/".includes(lastChar)) return; // prevent double operators
+  if (expression.length === 0 && (op === "+" || op === "-" || op === "*" || op === "/" || op === ")")) {
+    // Don't allow operator or closing paren as first char except "("
+    return;
+  }
   expression += op;
   updateExpression();
-}
-
-function backspace() {
-  if (expression.length === 0) return;
-  const lastChar = expression.slice(-1);
-  expression = expression.slice(0, -1);
-  if (/\d/.test(lastChar)) {
-    for (let i = diceValues.length - 1; i >= 0; i--) {
-      if (usedDice[i] && diceValues[i].toString() === lastChar) {
-        usedDice[i] = false;
-        break;
-      }
-    }
-  }
-  updateDiceStyles();
-  updateExpression();
-  updateScore("");
-}
-
-function clearExpression() {
-  expression = "";
-  usedDice = [false, false, false, false, false];
-  updateDiceStyles();
-  updateExpression();
-  updateScore("");
 }
 
 function updateExpression() {
   exprText.textContent = expression;
 }
 
+function backspace() {
+  if (expression.length === 0) return;
+
+  const lastChar = expression.slice(-1);
+  expression = expression.slice(0, -1);
+
+  // Check if last char was a dice number and re-enable dice
+  if ("123456".includes(lastChar)) {
+    for (let i = 0; i < diceValues.length; i++) {
+      if (diceValues[i].toString() === lastChar && usedDice[i]) {
+        usedDice[i] = false;
+        break;
+      }
+    }
+  }
+
+  updateExpression();
+  updateDiceStyles();
+  resultDiv.textContent = "";
+}
+
+function clearExpression() {
+  expression = "";
+  usedDice = [false, false, false, false, false];
+  updateExpression();
+  updateDiceStyles();
+  resultDiv.textContent = "";
+}
+
 function checkAnswer() {
   if (expression.length === 0) {
-    resultDiv.textContent = "Enter an expression!";
+    resultDiv.textContent = "Please enter an expression.";
     return;
   }
-  if (usedDice.includes(false)) {
-    resultDiv.textContent = "You must use all dice exactly once.";
-    return;
-  }
+
+  // Validate expression to only contain digits, operators, parentheses
   if (!/^[0-9+\-*/() ]+$/.test(expression)) {
     resultDiv.textContent = "Invalid characters in expression.";
     return;
   }
-  try {
-    // Evaluate expression safely
-    const val = eval(expression);
-    if (typeof val !== "number" || isNaN(val) || !isFinite(val)) {
-      resultDiv.textContent = "Expression result invalid.";
-      return;
-    }
 
-    const diff = Math.abs(val - targetNumber);
-    resultDiv.textContent = `Result: ${val} (Difference: ${diff})`;
-    updateScore(diff);
+  // Check if expression uses only dice values once each
+  const usedDiceCount = usedDice.filter(Boolean).length;
+  const diceNumbersUsed = expression.match(/\d+/g) || [];
+  const diceUsedCount = diceNumbersUsed.reduce((acc, val) => {
+    const num = parseInt(val, 10);
+    return acc + (diceValues.includes(num) ? 1 : 0);
+  }, 0);
 
-    saveProgress(diff);
-
-  } catch (e) {
-    resultDiv.textContent = "Invalid expression.";
+  // Basic check that number of dice used in expression equals number of dice marked used
+  if (diceUsedCount !== usedDiceCount) {
+    resultDiv.textContent = "Please use dice values correctly and only once each.";
+    return;
   }
+
+  let evaluated;
+  try {
+    // Evaluate safely using Function constructor instead of eval
+    evaluated = Function(`"use strict"; return (${expression})`)();
+  } catch (e) {
+    resultDiv.textContent = "Error evaluating expression.";
+    return;
+  }
+
+  if (typeof evaluated !== "number" || !isFinite(evaluated)) {
+    resultDiv.textContent = "Expression did not produce a valid number.";
+    return;
+  }
+
+  const diff = Math.abs(targetNumber - evaluated);
+  resultDiv.textContent = `Your result: ${evaluated} | Difference from target: ${diff}`;
+
+  updateScore(diff);
+  saveProgress(diff);
 }
 
-function updateScore(score) {
-  if (score === "") {
+function updateScore(diff) {
+  if (diff === "") {
     scoreDiv.textContent = "";
     return;
   }
-  scoreDiv.textContent = `Score (difference from target): ${score}`;
+  scoreDiv.textContent = `Score (difference): ${diff}`;
 }
+
+// --- LocalStorage and Progress ---
 
 function saveProgress(newScore) {
   const todayKey = getTodayKey();
@@ -191,7 +215,7 @@ function saveProgress(newScore) {
     updateStreak(newScore);
     addToArchive(todayKey, newScore);
   } else {
-    updateStreak();
+    updateStreak(newScore);
   }
   updateArchive();
 }
@@ -208,17 +232,20 @@ function updateStreak(newScore) {
   const storedBestYesterday = localStorage.getItem("dailyDiceBestScore-" + yesterdayKey);
 
   if (storedBestYesterday !== null) {
-    if (newScore !== undefined && newScore <= Number(storedBestYesterday)) {
+    if (newScore === 0) {
+      // If score zero today and yesterday had a score, increment streak
       streak += 1;
     } else if (newScore !== undefined) {
-      streak = 1;
+      // Reset streak if today’s score is not zero
+      streak = 0;
     }
   } else {
-    if (newScore !== undefined) streak = 1;
+    // No yesterday data, streak = 1 if perfect score, else 0
+    streak = (newScore === 0) ? 1 : 0;
   }
 
   localStorage.setItem("dailyDiceStreak", streak);
-  streakDiv.textContent = `Current Streak: ${streak}`;
+  streakDiv.textContent = `Consecutive Perfect Scores (0 diff): ${streak}`;
 }
 
 function getYesterdayKey() {
@@ -259,7 +286,7 @@ function loadProgress() {
   } else {
     scoreDiv.textContent = "";
   }
-  streakDiv.textContent = `Current Streak: ${localStorage.getItem("dailyDiceStreak") || 0}`;
+  streakDiv.textContent = `Consecutive Perfect Scores (0 diff): ${localStorage.getItem("dailyDiceStreak") || 0}`;
 }
 
 // --- Init ---
