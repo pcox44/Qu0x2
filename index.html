@@ -1,54 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Daily Dice Game</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Daily Dice Game</title>
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>🎲 Daily Dice Game</h1>
+  <div class="container">
+    <h1>Daily Dice Game</h1>
+    <p id="blurb">
+      Use each of the 5 dice exactly once to create an expression as close as possible to the target number.<br/>
+      You can use +, -, *, /, and parentheses freely.<br/>
+      The score is the absolute difference between your result and the target.<br/>
+      Try to get a perfect solution (score 0) and build your streak!
+    </p>
 
-  <p id="rules">
-    Use each dice number exactly once.<br/>
-    Insert operators (+, -, *, /) and parentheses freely.<br/>
-    No concatenating dice numbers (e.g., 4 and 5 cannot make 45).<br/>
-    Score = how far your result is from the target (lower is better). Perfect score = 0.<br/>
-    Try to get as many perfect solutions as possible!<br/>
-  </p>
+    <div id="target-container">
+      Target Number: <span id="target-number"></span>
+    </div>
 
-  <div id="target-container">
-    Target Number: <span id="target" class="target-number"></span>
+    <div id="dice-container"></div>
+
+    <input type="text" id="expression" readonly placeholder="Your expression" />
+
+    <div id="live-result">Result: -</div>
+    <div id="score-display">Score: -</div>
+
+    <div class="buttons-row">
+      <button class="btn-op btn-small">(</button>
+      <button class="btn-op btn-small">)</button>
+      <button class="btn-op btn-small">+</button>
+      <button class="btn-op btn-small">-</button>
+      <button class="btn-op btn-small">*</button>
+      <button class="btn-op btn-small">/</button>
+    </div>
+
+    <div class="buttons-row">
+      <button id="btn-backspace">Backspace</button>
+      <button id="btn-clear">Clear</button>
+      <button id="btn-submit">Submit</button>
+    </div>
+
+    <div id="streak">Current Streak: 0</div>
+
+    <h2>Today's Attempts</h2>
+    <div id="archive"></div>
   </div>
 
-  <div id="dice-container"></div>
-
-  <div id="expression-container">
-    <input type="text" id="expression" placeholder="Build your expression here" readonly />
-  </div>
-
-  <div id="buttons">
-    <button class="op-btn" onclick="addOp('+')">+</button>
-    <button class="op-btn" onclick="addOp('-')">-</button>
-    <button class="op-btn" onclick="addOp('*')">*</button>
-    <button class="op-btn" onclick="addOp('/')">/</button>
-    <button class="op-btn" onclick="addOp('(')">(</button>
-    <button class="op-btn" onclick="addOp(')')">)</button>
-    <button class="ctrl-btn" onclick="backspace()">&#x2190; Backspace</button>
-    <button class="ctrl-btn" onclick="clearExpression()">Clear</button>
-    <button class="submit-btn" onclick="submitExpression()">Submit</button>
-  </div>
-
-  <div id="live-result"></div>
-
-  <div id="score-streak-container">
-    <div>Score: <span id="score-display">-</span></div>
-    <div>Streak: <span id="streak-display">0</span> perfect day(s) in a row</div>
-  </div>
-
-  <h2>Archive (Previous Attempts)</h2>
-  <div id="archive"></div>
-
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
