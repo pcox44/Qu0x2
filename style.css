@@ -1,122 +1,156 @@
+/* style.css */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f5f5;
+  color: #222;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
   max-width: 600px;
-  margin: 20px auto;
-  padding: 0 20px;
-}
-
-h1 {
-  text-align: center;
-}
-
-.rules {
-  font-size: 0.9em;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-#dice-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 10px;
-  gap: 10px;
-}
-
-.dice {
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
-  font-weight: bold;
-  font-size: 1.5em;
-  text-align: center;
-  border-radius: 5px;
-  cursor: pointer;
-  user-select: none;
-  color: white;
-}
-
-.dice-1 { background-color: #e74c3c; }
-.dice-2 { background-color: #3498db; }
-.dice-3 { background-color: #2ecc71; }
-.dice-4 { background-color: #9b59b6; }
-.dice-5 { background-color: #f1c40f; color: black; }
-.dice-6 { background-color: #34495e; }
-
-#expression-container {
-  margin: 15px 0;
-  text-align: center;
-}
-
-#expression {
   width: 100%;
-  font-size: 1.3em;
-  padding: 8px;
-  text-align: center;
+  background: white;
+  padding: 20px 30px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
-#buttons {
+h1, h2 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#rules {
+  background: #eef6fb;
+  border: 1px solid #a3c8e8;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.target-container {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.dice-container {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+/* Horse race style dice */
+.die {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(145deg, #e0e0e0, #ffffff);
+  border-radius: 12px;
+  box-shadow:
+    inset 4px 4px 8px #bebebe,
+    inset -4px -4px 8px #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 28px;
+  color: #333;
+  user-select: none;
+  cursor: default;
+  transition: background-color 0.3s ease;
+}
+
+.die:hover {
+  background-color: #d0e7ff;
+}
+
+#input-field {
+  width: 100%;
+  font-size: 20px;
+  padding: 10px;
+  border: 2px solid #87a8e6;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.buttons button {
+  flex: 1;
+  margin: 0 5px;
+  padding: 12px 0;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #87a8e6;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buttons button:hover {
+  background-color: #5f7fc7;
+}
+
+#live-feedback {
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+#message {
+  text-align: center;
+  font-weight: 600;
+  height: 22px;
   margin-bottom: 20px;
 }
 
-#dice-buttons button,
-#op-buttons button,
-#btn-backspace,
-#btn-clear,
-#btn-submit {
-  font-size: 1.1em;
-  padding: 8px 12px;
-  cursor: pointer;
-  border-radius: 4px;
-  border: 1px solid #888;
-  background: #f7f7f7;
-  user-select: none;
+.stats {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 16px;
 }
 
-#dice-buttons button {
-  width: 40px;
-  font-weight: bold;
-  color: #333;
-}
-
-#btn-backspace,
-#btn-clear,
-#btn-submit {
-  min-width: 100px;
-}
-
-#attempts-list {
-  max-height: 250px;
+.archive {
+  max-height: 200px;
   overflow-y: auto;
-  border: 1px solid #ddd;
-  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  background-color: #fafafa;
   font-family: monospace;
-  background: #fafafa;
-  border-radius: 4px;
+  font-size: 14px;
 }
 
-.attempt {
-  margin: 4px 0;
+.archive-entry {
+  border-bottom: 1px solid #ddd;
+  padding: 4px 0;
+  display: flex;
+  justify-content: space-between;
 }
 
-.perfect {
-  color: green;
-  font-weight: bold;
+.archive-entry:last-child {
+  border-bottom: none;
 }
 
-#perfect-count {
-  margin-top: 10px;
-  font-weight: bold;
-  text-align: center;
-  font-size: 1.1em;
-  color: green;
+.archive-expression {
+  flex: 3;
+  word-break: break-all;
 }
 
-#streak {
-  text-align: center;
-  font-weight: bold;
-  font-size: 1.1em;
+.archive-result, .archive-score {
+  flex: 1;
+  text-align: right;
 }
