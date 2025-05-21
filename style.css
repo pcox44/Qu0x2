@@ -1,99 +1,148 @@
 body {
   font-family: Arial, sans-serif;
+  background-color: #f4f7f8;
+  margin: 0;
   padding: 20px;
-  background: #f9f9f9;
-  color: #222;
+  display: flex;
+  justify-content: center;
 }
 
-#dice-container {
+.container {
+  max-width: 520px;
+  width: 100%;
+  background: white;
+  padding: 25px 35px 35px 35px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+p {
+  margin-top: 0;
+  font-size: 16px;
+  color: #444;
+}
+
+.dice-container {
+  margin: 20px 0 10px 0;
   display: flex;
+  justify-content: center;
   gap: 12px;
-  margin: 10px 0 20px 0;
 }
 
 .die {
   width: 50px;
   height: 50px;
   border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   font-weight: bold;
   font-size: 24px;
-  line-height: 50px;
-  text-align: center;
-  cursor: pointer;
   user-select: none;
-  border: 2px solid #444;
-  color: #000;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  transition: background-color 0.3s, color 0.3s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
-.die.used {
-  opacity: 0.4;
-  cursor: default;
-  text-decoration: line-through;
+/* Horse racing dice colors */
+.die-1 {
+  background-color: #cc0000; /* red */
+  color: white;
+}
+.die-2 {
+  background-color: white;
+  color: black;
+  border: 1.5px solid #ccc;
+}
+.die-3 {
+  background-color: #003399; /* blue */
+  color: white;
+}
+.die-4 {
+  background-color: #ffeb3b; /* yellow */
+  color: black;
+}
+.die-5 {
+  background-color: #388e3c; /* green */
+  color: white;
+}
+.die-6 {
+  background-color: black;
+  color: #ffeb3b; /* yellow text */
 }
 
-#expression-container {
-  min-height: 32px;
-  font-size: 22px;
-  margin-bottom: 14px;
-  border: 1.5px solid #666;
-  background-color: #fff;
-  padding: 8px 10px;
-  border-radius: 6px;
-  min-width: 240px;
-  user-select: text;
-  font-family: 'Courier New', Courier, monospace;
-}
-
-#buttons-container button {
-  margin: 5px 6px 5px 0;
-  padding: 9px 14px;
-  font-size: 20px;
-  cursor: pointer;
-  border-radius: 6px;
-  border: 1.8px solid #444;
-  background-color: #eee;
-  user-select: none;
-  transition: background-color 0.25s ease;
-}
-
-#buttons-container button:hover:not(:disabled) {
-  background-color: #ddd;
-}
-
-#buttons-container button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-#target-container {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 18px;
-  color: #111;
-}
-
-#result, #score, #streak, #archive {
-  margin-top: 18px;
+.target-number,
+.result-message,
+.score-message,
+.streak-message {
+  margin-top: 12px;
   font-size: 18px;
+  color: #222;
+  min-height: 24px;
   font-weight: 600;
 }
 
-#archive {
-  font-size: 14px;
-  font-weight: normal;
-  margin-top: 10px;
-  max-height: 150px;
-  overflow-y: auto;
-  border-top: 1px solid #ccc;
-  padding-top: 10px;
-  color: #444;
+.input-container {
+  margin-top: 20px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-/* Improved dice colors for readability */
-.die:nth-child(1) { background-color: #ffb703; color: #000; }  /* bright yellow */
-.die:nth-child(2) { background-color: #219ebc; color: #fff; }  /* medium blue */
-.die:nth-child(3) { background-color: #fb8500; color: #000; }  /* bright orange */
-.die:nth-child(4) { background-color: #023047; color: #fff; }  /* dark navy */
-.die:nth-child(5) { background-color: #8ecae6; color: #000; }  /* light blue */
+#answer-input {
+  font-size: 18px;
+  padding: 8px;
+  width: 220px;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+}
+
+button {
+  font-size: 16px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #1976d2;
+  color: white;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+button:hover {
+  background-color: #1565c0;
+}
+
+.archive-section {
+  margin-top: 40px;
+  text-align: left;
+}
+
+#archive-list {
+  list-style-type: none;
+  padding-left: 0;
+  max-height: 210px;
+  overflow-y: auto;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  background-color: #fafafa;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+#archive-list li {
+  padding: 6px 12px;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#archive-list li:last-child {
+  border-bottom: none;
+}
