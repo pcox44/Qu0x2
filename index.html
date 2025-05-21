@@ -8,26 +8,27 @@
 </head>
 <body>
   <h1>🎲 Daily Dice Game</h1>
-  <div id="target" class="target"></div>
+  <div id="target" class="target-number"></div>
 
-  <div id="dice-container" class="dice-container"></div>
+  <div id="dice-container"></div>
 
-  <div id="expression" class="expression" contenteditable="false" spellcheck="false"></div>
-  
-  <div id="live-result" class="live-result"></div>
-  <div id="score-display" class="score-display"></div>
+  <div id="expression"></div>
 
-  <div id="buttons" class="buttons">
-    <button onclick="addOp('+')">+</button>
-    <button onclick="addOp('-')">-</button>
-    <button onclick="addOp('*')">*</button>
-    <button onclick="addOp('/')">/</button>
-    <button onclick="addOp('(')">(</button>
-    <button onclick="addOp(')')">)</button>
-    <button onclick="backspace()">⌫</button>
-    <button onclick="clearExpression()">Clear</button>
-    <button onclick="submitExpression()">Submit</button>
+  <div id="buttons">
+    <button class="op-btn" onclick="addOp('+')">+</button>
+    <button class="op-btn" onclick="addOp('-')">-</button>
+    <button class="op-btn" onclick="addOp('*')">*</button>
+    <button class="op-btn" onclick="addOp('/')">/</button>
+    <button class="op-btn" onclick="addOp('(')">(</button>
+    <button class="op-btn" onclick="addOp(')')">)</button>
+    <button class="op-btn" onclick="backspace()">&#x2190;</button>
+    <button class="op-btn" onclick="clearExpression()">Clear</button>
+    <button class="op-btn submit-btn" onclick="submitExpression()">Submit</button>
   </div>
+
+  <div id="live-result"></div>
+  <div id="score"></div>
+  <div id="streak"></div>
 
   <h2>Results</h2>
   <table id="results-table">
@@ -37,8 +38,8 @@
     <tbody></tbody>
   </table>
 
-  <h2>Archive (last 30 days)</h2>
-  <div id="archive" class="archive"></div>
+  <h2>Archive (Last 30 Days)</h2>
+  <div id="archive"></div>
 
   <script src="script.js"></script>
 </body>
