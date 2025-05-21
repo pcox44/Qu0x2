@@ -3,49 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Daily Dice Game</title>
+  <title>🎲 Daily Dice Game</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>🎲 Daily Dice Game</h1>
-  <div id="target" aria-live="polite"></div>
+  <div id="target" aria-live="polite" aria-atomic="true"></div>
 
-  <div id="dice-container" aria-label="Dice"></div>
+  <div id="dice-container" aria-label="Dice values" role="list"></div>
 
-  <div id="expression" aria-live="polite" aria-atomic="true"></div>
+  <div id="expression" aria-live="polite" aria-atomic="true" aria-label="Current expression"></div>
 
-  <div id="buttons">
-    <button onclick="addOp('1')" class="number">1</button>
-    <button onclick="addOp('2')" class="number">2</button>
-    <button onclick="addOp('3')" class="number">3</button>
-    <button onclick="addOp('4')" class="number">4</button>
-    <button onclick="addOp('5')" class="number">5</button>
-    <button onclick="addOp('6')" class="number">6</button>
-    <button onclick="addOp('+')" class="operator">+</button>
-    <button onclick="addOp('-')" class="operator">−</button>
-    <button onclick="addOp('*')" class="operator">×</button>
-    <button onclick="addOp('/')" class="operator">÷</button>
-    <button onclick="addOp('(')" class="operator">(</button>
-    <button onclick="addOp(')')" class="operator">)</button>
+  <div id="buttons" role="group" aria-label="Operation buttons">
+    <button onclick="addOp('+')">+</button>
+    <button onclick="addOp('-')">−</button>
+    <button onclick="addOp('*')">×</button>
+    <button onclick="addOp('/')">÷</button>
+    <button onclick="addOp('(')">(</button>
+    <button onclick="addOp(')')">)</button>
     <button onclick="backspace()">⌫</button>
     <button onclick="clearExpression()">Clear</button>
     <button onclick="submitExpression()">Submit</button>
   </div>
 
-  <div id="live-result" aria-live="polite"></div>
+  <div id="live-result" aria-live="polite" aria-atomic="true"></div>
   <div id="score"></div>
   <div id="streak"></div>
 
   <h2>Results</h2>
-  <table id="results-table" aria-label="Submitted expressions and scores">
+  <table id="results-table" aria-label="Your submissions">
     <thead>
       <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <h2>Archive</h2>
-  <div id="archive"></div>
+  <h2>Archive (Last 30 Days)</h2>
+  <pre id="archive" aria-live="polite" aria-atomic="true"></pre>
 
   <button id="toggle-dark" onclick="toggleDarkMode()">Toggle Dark Mode</button>
 
