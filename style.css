@@ -1,155 +1,168 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 1em;
-  background: #f8f9fa;
-  color: #222;
+  max-width: 900px;
+  margin: 10px auto;
+  padding: 0 15px 50px;
+  background: #fff;
+  color: #111;
+  user-select: none;
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 0.2em;
+  margin-bottom: 8px;
 }
 
-.target {
-  font-size: 3em;
-  font-weight: bold;
+.target-number {
+  font-size: 3.5rem;
+  font-weight: 900;
   text-align: center;
-  margin-bottom: 1em;
+  margin-bottom: 12px;
   color: #003366;
-  user-select: none;
+  letter-spacing: 4px;
 }
 
-.dice-container {
+#dice-container {
   display: flex;
   justify-content: center;
-  gap: 1em;
-  margin-bottom: 1em;
+  margin-bottom: 15px;
+  gap: 15px;
 }
 
-.die {
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
-  background: white;
-  border: 2px solid #444;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2em;
-  font-weight: bold;
+.dice {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 70px;
+  text-align: center;
+  color: white;
   cursor: pointer;
   user-select: none;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.3s, color 0.3s;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.2);
+  border: 3px solid transparent;
 }
 
-.die.used {
-  background: black;
-  color: white !important;
+.dice.used {
+  background: black !important;
+  color: #555 !important;
   cursor: default;
+  border-color: #222;
 }
 
-.die[data-value="1"] { color: #CC0000; } /* red */
-.die[data-value="2"] { color: #003399; } /* blue */
-.die[data-value="3"] { color: #009933; } /* green */
-.die[data-value="4"] { color: #FFCC00; } /* gold */
-.die[data-value="5"] { color: #660066; } /* purple */
-.die[data-value="6"] { color: #FF6600; } /* orange */
+/* Horse racing dice colors */
+.dice.dice1 { background: #D62828; } /* red */
+.dice.dice2 { background: #F0F0F0; color: black; } /* white bg black text */
+.dice.dice3 { background: #0033A0; } /* blue */
+.dice.dice4 { background: #FFDD00; color: black; } /* yellow */
+.dice.dice5 { background: #008000; } /* green */
+.dice.dice6 {
+  background: black;
+  color: #FFDD00; /* yellow number on black */
+  font-weight: 900;
+}
 
-.expression {
-  font-size: 1.6em;
-  min-height: 2em;
-  border: 2px solid #888;
-  border-radius: 6px;
-  margin: 0 auto 0.5em auto;
-  max-width: 400px;
-  padding: 0.25em 0.5em;
+#expression {
+  font-size: 2rem;
+  font-weight: 700;
+  min-height: 40px;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 1.5px;
   user-select: text;
-  white-space: nowrap;
-  overflow-x: auto;
 }
 
-.live-result {
-  font-size: 1.2em;
-  color: #333;
-  text-align: center;
-  margin-bottom: 0.1em;
-  min-height: 1.2em;
-}
-
-.score-display {
-  font-weight: bold;
-  font-size: 1.2em;
-  color: #004488;
-  text-align: center;
-  margin-bottom: 1em;
-}
-
-.buttons {
+#buttons {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 0.5em;
-  margin-bottom: 1em;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
+  gap: 8px;
+  margin-bottom: 15px;
 }
 
-.buttons button {
-  font-size: 1.4em;
-  padding: 0.3em 0.6em;
-  border-radius: 8px;
-  border: 2px solid #004488;
-  background: #eef6ff;
-  color: #004488;
+.op-btn {
+  font-size: 1.4rem;
+  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: none;
   cursor: pointer;
+  background: #0077cc;
+  color: white;
+  transition: background-color 0.2s;
+  min-width: 52px;
   user-select: none;
-  min-width: 45px;
-  transition: background-color 0.2s ease;
 }
 
-.buttons button:hover:not(:disabled) {
-  background-color: #cce0ff;
+.op-btn:hover:not(.used) {
+  background-color: #005fa3;
 }
 
-.buttons button:disabled {
-  opacity: 0.5;
-  cursor: default;
+.op-btn:active:not(.used) {
+  background-color: #00497a;
+}
+
+.submit-btn {
+  background: #28a745;
+}
+
+.submit-btn:hover {
+  background: #1e7e34;
+}
+
+#live-result, #score, #streak {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+  min-height: 22px;
+  color: #222;
 }
 
 #results-table {
   width: 100%;
-  max-width: 500px;
   border-collapse: collapse;
-  margin: 0 auto 2em auto;
+  margin-bottom: 15px;
+  font-size: 1rem;
 }
 
-#results-table th, #results-table td {
-  border: 1px solid #ccc;
-  padding: 0.4em 0.6em;
+#results-table th,
+#results-table td {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
   text-align: center;
-  font-size: 1em;
 }
 
-.archive {
-  max-width: 400px;
-  margin: 0 auto;
-  font-size: 1em;
-  line-height: 1.4;
+#results-table th {
+  background-color: #0077cc;
+  color: white;
 }
 
-.archive .day {
-  padding: 0.3em 0.5em;
-  border-bottom: 1px solid #ccc;
+#archive {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 10px;
+  background: #f9f9f9;
+  font-size: 0.9rem;
+  color: #222;
 }
 
-.archive .perfect {
-  font-weight: bold;
-  color: #007700;
+.archive-day {
+  margin-bottom: 6px;
 }
 
-.archive .checkmark {
+.perfect {
   color: green;
-  margin-left: 0.5em;
-  font-weight: bold;
+  font-weight: 700;
+  margin-left: 5px;
+}
+
+.dice.used-button {
+  background: black !important;
+  color: #555 !important;
+  cursor: default !important;
+  border-color: #222 !important;
 }
