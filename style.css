@@ -1,156 +1,47 @@
-/* style.css */
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f5f5f5;
-  color: #222;
-  margin: 0;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Dice Game</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <h1>🎲 Daily Dice Game</h1>
+  <p class="rules">
+    Use all five dice exactly once with any combination of operations and parentheses to get as close as possible to the target number (1–100). Dice may be used in any order, but numbers must be separated by operators — no multi-digit numbers. You may try as many times as you'd like. Your score is the absolute difference from the target. A perfect solution (score 0) increases your streak.
+  </p>
+  <div id="target-container"><strong>Target:</strong> <span id="target"></span></div>
+  <div id="dice-container"></div>
+  <div id="expression"></div>
+  <div id="buttons">
+    <div id="operator-buttons">
+      <button onclick="addOp('+')">+</button>
+      <button onclick="addOp('-')">−</button>
+      <button onclick="addOp('*')">×</button>
+      <button onclick="addOp('/')">÷</button>
+      <button onclick="addOp('(')">(</button>
+      <button onclick="addOp(')')">)</button>
+    </div>
+    <button onclick="backspace()">←</button>
+    <button onclick="clearExpression()">Clear</button>
+    <button onclick="submitExpression()">Submit</button>
+  </div>
+  <div id="live-result"></div>
+  <div id="score"></div>
+  <div id="streak"></div>
 
-.container {
-  max-width: 600px;
-  width: 100%;
-  background: white;
-  padding: 20px 30px;
-  border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
+  <h2>Today's Attempts</h2>
+  <table id="results-table">
+    <thead>
+      <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-h1, h2 {
-  text-align: center;
-  margin-bottom: 10px;
-}
+  <h2>Archive</h2>
+  <div id="archive"></div>
 
-#rules {
-  background: #eef6fb;
-  border: 1px solid #a3c8e8;
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 15px;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.target-container {
-  text-align: center;
-  font-size: 24px;
-  margin-bottom: 15px;
-  font-weight: 600;
-}
-
-.dice-container {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 15px;
-}
-
-/* Horse race style dice */
-.die {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(145deg, #e0e0e0, #ffffff);
-  border-radius: 12px;
-  box-shadow:
-    inset 4px 4px 8px #bebebe,
-    inset -4px -4px 8px #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 28px;
-  color: #333;
-  user-select: none;
-  cursor: default;
-  transition: background-color 0.3s ease;
-}
-
-.die:hover {
-  background-color: #d0e7ff;
-}
-
-#input-field {
-  width: 100%;
-  font-size: 20px;
-  padding: 10px;
-  border: 2px solid #87a8e6;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  box-sizing: border-box;
-}
-
-.buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-}
-
-.buttons button {
-  flex: 1;
-  margin: 0 5px;
-  padding: 12px 0;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  background-color: #87a8e6;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.buttons button:hover {
-  background-color: #5f7fc7;
-}
-
-#live-feedback {
-  font-size: 16px;
-  text-align: center;
-  margin-bottom: 12px;
-}
-
-#message {
-  text-align: center;
-  font-weight: 600;
-  height: 22px;
-  margin-bottom: 20px;
-}
-
-.stats {
-  text-align: center;
-  margin-bottom: 15px;
-  font-size: 16px;
-}
-
-.archive {
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 8px;
-  background-color: #fafafa;
-  font-family: monospace;
-  font-size: 14px;
-}
-
-.archive-entry {
-  border-bottom: 1px solid #ddd;
-  padding: 4px 0;
-  display: flex;
-  justify-content: space-between;
-}
-
-.archive-entry:last-child {
-  border-bottom: none;
-}
-
-.archive-expression {
-  flex: 3;
-  word-break: break-all;
-}
-
-.archive-result, .archive-score {
-  flex: 1;
-  text-align: right;
-}
+  <script src="script.js"></script>
+</body>
+</html>
