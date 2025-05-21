@@ -1,36 +1,38 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Daily Dice Game 🎲</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Daily Dice Game</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Daily Dice Game 🎲</h1>
-  <div id="target">Target: <span id="target-number">??</span></div>
+  <h1>Daily Dice Game</h1>
+  <div id="target-container">
+    Target Number: <span id="target-number"></span>
+  </div>
 
   <div id="dice-container"></div>
 
-  <div id="buttons">
-    <button onclick="appendOperator('+')">+</button>
-    <button onclick="appendOperator('-')">−</button>
-    <button onclick="appendOperator('*')">×</button>
-    <button onclick="appendOperator('/')">÷</button>
-    <button onclick="appendOperator('(')">(</button>
-    <button onclick="appendOperator(')')">)</button>
-    <button onclick="backspace()">← Backspace</button>
-    <button onclick="clearExpression()">🧹 Clear</button>
-    <button onclick="checkAnswer()">✅ Submit</button>
+  <div id="expression-container">
+    <div id="expr-text" class="expression"></div>
   </div>
 
-  <div id="expression">Expression: <span id="expr-text"></span></div>
+  <div id="buttons-container">
+    <button onclick="appendOperator('+')">+</button>
+    <button onclick="appendOperator('-')">-</button>
+    <button onclick="appendOperator('*')">&times;</button>
+    <button onclick="appendOperator('/')">&divide;</button>
+    <button onclick="backspace()">Backspace</button>
+    <button onclick="clearExpression()">Clear</button>
+    <button onclick="checkAnswer()">Submit</button>
+  </div>
+
   <div id="result"></div>
   <div id="score"></div>
   <div id="streak"></div>
   <div id="archive"></div>
 
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
