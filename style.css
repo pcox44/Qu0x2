@@ -1,58 +1,52 @@
 body {
-  font-family: Arial, sans-serif;
+  font-family: sans-serif;
   text-align: center;
+  background: #f5f5f5;
   padding: 20px;
-  background: #f4f4f4;
-  color: #333;
 }
 
-h1 {
-  font-size: 2rem;
+#target {
+  font-size: 2.5em;
+  margin: 10px 0;
 }
 
 #dice-container {
   display: flex;
   justify-content: center;
+  gap: 10px;
   margin: 20px 0;
 }
 
 .die {
   width: 50px;
   height: 50px;
-  margin: 0 10px;
-  font-size: 1.5rem;
-  line-height: 50px;
-  border-radius: 10px;
+  font-size: 1.5em;
+  font-weight: bold;
   color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.1s ease;
 }
 
-.die.used {
+.used {
   opacity: 0.4;
-  text-decoration: line-through;
+  cursor: not-allowed;
 }
 
 #expression {
-  font-size: 1.5rem;
+  font-size: 1.3em;
   margin-bottom: 10px;
+  min-height: 30px;
 }
 
-.buttons button {
+#buttons button {
   margin: 5px;
-  padding: 10px 15px;
-  font-size: 1rem;
-  cursor: pointer;
+  padding: 10px;
+  font-size: 1.1em;
 }
 
-#result,
-#score,
-#streak {
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-#archive {
-  margin-top: 20px;
-  font-size: 0.9rem;
+#result, #score, #streak, #archive {
+  margin-top: 15px;
 }
