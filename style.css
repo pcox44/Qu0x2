@@ -1,56 +1,99 @@
 body {
   font-family: Arial, sans-serif;
   padding: 20px;
+  background: #f9f9f9;
+  color: #222;
 }
 
 #dice-container {
   display: flex;
-  gap: 10px;
-  margin: 10px 0;
+  gap: 12px;
+  margin: 10px 0 20px 0;
 }
 
 .die {
   width: 50px;
   height: 50px;
-  border-radius: 6px;
-  color: black;
+  border-radius: 8px;
   font-weight: bold;
   font-size: 24px;
   line-height: 50px;
   text-align: center;
   cursor: pointer;
   user-select: none;
-  border: 2px solid black;
+  border: 2px solid #444;
+  color: #000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .die.used {
-  opacity: 0.3;
+  opacity: 0.4;
   cursor: default;
+  text-decoration: line-through;
 }
 
 #expression-container {
-  min-height: 30px;
-  font-size: 20px;
-  margin-bottom: 10px;
-  border: 1px solid #888;
-  padding: 6px;
-  border-radius: 4px;
-  min-width: 200px;
+  min-height: 32px;
+  font-size: 22px;
+  margin-bottom: 14px;
+  border: 1.5px solid #666;
+  background-color: #fff;
+  padding: 8px 10px;
+  border-radius: 6px;
+  min-width: 240px;
+  user-select: text;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 #buttons-container button {
-  margin: 4px;
-  padding: 8px 12px;
-  font-size: 18px;
+  margin: 5px 6px 5px 0;
+  padding: 9px 14px;
+  font-size: 20px;
   cursor: pointer;
+  border-radius: 6px;
+  border: 1.8px solid #444;
+  background-color: #eee;
+  user-select: none;
+  transition: background-color 0.25s ease;
+}
+
+#buttons-container button:hover:not(:disabled) {
+  background-color: #ddd;
+}
+
+#buttons-container button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 #target-container {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 15px;
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #111;
 }
 
 #result, #score, #streak, #archive {
-  margin-top: 15px;
+  margin-top: 18px;
+  font-size: 18px;
+  font-weight: 600;
 }
+
+#archive {
+  font-size: 14px;
+  font-weight: normal;
+  margin-top: 10px;
+  max-height: 150px;
+  overflow-y: auto;
+  border-top: 1px solid #ccc;
+  padding-top: 10px;
+  color: #444;
+}
+
+/* Improved dice colors for readability */
+.die:nth-child(1) { background-color: #ffb703; color: #000; }  /* bright yellow */
+.die:nth-child(2) { background-color: #219ebc; color: #fff; }  /* medium blue */
+.die:nth-child(3) { background-color: #fb8500; color: #000; }  /* bright orange */
+.die:nth-child(4) { background-color: #023047; color: #fff; }  /* dark navy */
+.die:nth-child(5) { background-color: #8ecae6; color: #000; }  /* light blue */
