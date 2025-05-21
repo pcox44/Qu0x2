@@ -1,209 +1,53 @@
-/* Reset some basics */
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  max-width: 720px;
-  margin: 12px auto;
-  padding: 0 20px 40px 20px;
-  color: #222;
-  background-color: #f9f9f9;
-  user-select: none;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Daily Dice Game</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Dice Game</h1>
+    <p id="blurb">
+      Use each of the 5 dice exactly once to create an expression as close as possible to the target number.<br/>
+      You can use +, -, *, /, and parentheses freely.<br/>
+      The score is the absolute difference between your result and the target.<br/>
+      Try to get a perfect solution (score 0) and build your streak!
+    </p>
 
-h1 {
-  text-align: center;
-  margin-bottom: 0.2em;
-}
+    <div id="target-container">
+      Target Number: <span id="target-number"></span>
+    </div>
 
-#rules {
-  font-size: 0.9rem;
-  margin-bottom: 1.2em;
-  line-height: 1.3em;
-  text-align: center;
-  color: #444;
-}
+    <div id="dice-container"></div>
 
-#target-container {
-  text-align: center;
-  font-size: 1.6rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-}
+    <input type="text" id="expression" readonly placeholder="Your expression" />
 
-.target-number {
-  font-size: 2.4rem;
-  color: #b22222;
-  font-weight: 900;
-}
+    <div id="live-result">Result: -</div>
+    <div id="score-display">Score: -</div>
 
-#dice-container {
-  text-align: center;
-  margin-bottom: 1rem;
-}
+    <div class="buttons-row">
+      <button class="btn-op btn-small">(</button>
+      <button class="btn-op btn-small">)</button>
+      <button class="btn-op btn-small">+</button>
+      <button class="btn-op btn-small">-</button>
+      <button class="btn-op btn-small">*</button>
+      <button class="btn-op btn-small">/</button>
+    </div>
 
-.horse-race-die {
-  display: inline-block;
-  font-size: 3rem;
-  margin: 0 10px;
-  padding: 16px 20px;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-  user-select: none;
-  width: 56px;
-  height: 72px;
-  line-height: 72px;
-  color: white;
-  box-shadow: 0 4px 8px rgb(0 0 0 / 0.15);
-  transition: transform 0.15s ease;
-  border: 2px solid transparent;
-}
+    <div class="buttons-row">
+      <button id="btn-backspace">Backspace</button>
+      <button id="btn-clear">Clear</button>
+      <button id="btn-submit">Submit</button>
+    </div>
 
-.horse-race-die:active {
-  transform: scale(0.9);
-  border-color: #555;
-}
+    <div id="streak">Current Streak: 0</div>
 
-.horse-race-die.used {
-  opacity: 0.45;
-  cursor: default;
-  pointer-events: none;
-  border-color: #999;
-}
+    <h2>Today's Attempts</h2>
+    <div id="archive"></div>
+  </div>
 
-.horse-race-die.number-1 { background-color: #b22222; } /* red */
-.horse-race-die.number-2 {
-  background-color: white;
-  color: black;
-  border: 2px solid #ccc;
-}
-.horse-race-die.number-3 { background-color: #000080; } /* navy blue */
-.horse-race-die.number-4 { background-color: #ffea00; color: #333; } /* yellow */
-.horse-race-die.number-5 { background-color: #008000; } /* green */
-.horse-race-die.number-6 {
-  background-color: black;
-  color: #ffea00; /* yellow text */
-}
-
-#expression-container {
-  text-align: center;
-  margin-bottom: 12px;
-}
-
-#expression {
-  font-size: 1.8rem;
-  width: 100%;
-  max-width: 450px;
-  padding: 12px 15px;
-  border-radius: 6px;
-  border: 2px solid #777;
-  background-color: #fff;
-  user-select: text;
-  cursor: text;
-  letter-spacing: 2px;
-  text-align: center;
-}
-
-#buttons {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-button {
-  font-size: 1.4rem;
-  margin: 6px 8px 6px 8px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 600;
-  box-shadow: 0 3px 5px rgb(0 0 0 / 0.2);
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-button:active {
-  box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.4);
-  transform: scale(0.95);
-}
-
-.op-btn {
-  background-color: #666;
-  color: white;
-  width: 48px;
-  height: 48px;
-}
-
-.ctrl-btn {
-  background-color: #c45;
-  color: white;
-  min-width: 110px;
-  height: 48px;
-}
-
-.submit-btn {
-  background-color: #2a9d8f;
-  color: white;
-  min-width: 110px;
-  height: 48px;
-  font-weight: 700;
-}
-
-#live-result {
-  text-align: center;
-  font-size: 1.3rem;
-  min-height: 1.6em;
-  margin-bottom: 1rem;
-  font-weight: 600;
-  color: #333;
-}
-
-#score-streak-container {
-  text-align: center;
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-}
-
-#archive {
-  max-width: 640px;
-  margin: 0 auto;
-  font-size: 1.05rem;
-}
-
-.archive-day {
-  margin-bottom: 1.8rem;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 1em;
-}
-
-.archive-day h3 {
-  margin-bottom: 0.4em;
-  font-weight: 700;
-  font-size: 1.25rem;
-  color: #b22222;
-}
-
-.archive-list {
-  list-style: none;
-  padding-left: 0;
-  max-height: 220px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: white;
-}
-
-.archive-list li {
-  padding: 6px 14px;
-  border-bottom: 1px solid #eee;
-  cursor: default;
-}
-
-.archive-list li.perfect {
-  background-color: #d0f0d0;
-  color: #246824;
-  font-weight: 700;
-}
-
-.archive-list li:last-child {
-  border-bottom: none;
-}
+<script src="script.js"></script>
+</body>
+</html>
