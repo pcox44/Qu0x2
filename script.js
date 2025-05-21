@@ -1,4 +1,4 @@
-// Helpers for date and random
+// --- Helpers ---
 function getEasternMidnight() {
   const now = new Date();
   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -28,7 +28,7 @@ function shuffleArray(array, seed) {
   }
 }
 
-// Game variables
+// --- Variables ---
 let targetNumber;
 let diceValues = [];
 let usedDice = [false, false, false, false, false];
@@ -43,7 +43,7 @@ const scoreDiv = document.getElementById("score");
 const streakDiv = document.getElementById("streak");
 const archiveDiv = document.getElementById("archive");
 
-// Initialize Game
+// --- Game Setup ---
 function initGame() {
   expression = "";
   usedDice = [false, false, false, false, false];
@@ -65,7 +65,7 @@ function initGame() {
     die.textContent = value;
     die.style.backgroundColor = diceColors[i % diceColors.length];
     die.dataset.index = i;
-    die.onclick = () => toggleDieUsage(i);
+    die.addEventListener("click", () => toggleDieUsage(i));
     diceContainer.appendChild(die);
   });
 
@@ -73,6 +73,15 @@ function initGame() {
   updateScore("");
   updateStreak();
   updateArchive();
+
+  // Attach button event listeners
+  document.getElementById("btn-add").addEventListener("click", () => appendOperator("+"));
+  document.getElementById("btn-sub").addEventListener("click", () => appendOperator("-"));
+  document.getElementById("btn-mul").addEventListener("click", () => appendOperator("*"));
+  document.getElementById("btn-div").addEventListener("click", () => appendOperator("/"));
+  document.getElementById("btn-backspace").addEventListener("click", backspace);
+  document.getElementById("btn-clear").addEventListener("click", clearExpression);
+  document.getElementById("btn-submit").addEventListener("click", checkAnswer);
 }
 
 function toggleDieUsage(i) {
@@ -89,7 +98,6 @@ function updateDiceStyles() {
   });
 }
 
-// Expression manipulation
 function appendNumber(num) {
   expression += num.toString();
   updateExpression();
@@ -98,7 +106,7 @@ function appendNumber(num) {
 function appendOperator(op) {
   if (expression.length === 0) return; // prevent operator first
   const lastChar = expression[expression.length - 1];
-  if ("+-*/".includes(lastChar)) return; // no double operators
+  if ("+-*/".includes(lastChar)) return; // prevent double operators
   expression += op;
   updateExpression();
 }
@@ -146,7 +154,7 @@ function checkAnswer() {
     return;
   }
   try {
-    // Evaluate safely:
+    // Evaluate expression safely
     const val = eval(expression);
     if (typeof val !== "number" || isNaN(val) || !isFinite(val)) {
       resultDiv.textContent = "Expression result invalid.";
@@ -195,7 +203,6 @@ function updateStreakAfter(newScore) {
   const todayKey = getTodayKey();
   const yesterdayKey = getYesterdayKey();
 
-  const storedBestToday = localStorage.getItem("dailyDiceBestScore-" + todayKey);
   const storedBestYesterday = localStorage.getItem("dailyDiceBestScore-" + yesterdayKey);
 
   let streak = Number(localStorage.getItem("dailyDiceStreak") || 0);
