@@ -3,45 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🎲 Daily Dice Game</title>
+  <title>Daily Dice Game</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>🎲 Daily Dice Game</h1>
-  <div id="target" aria-live="polite" aria-atomic="true"></div>
+  <div id="target" class="target"></div>
 
-  <div id="dice-container" aria-label="Dice values" role="list"></div>
+  <div id="dice-container" class="dice-container"></div>
 
-  <div id="expression" aria-live="polite" aria-atomic="true" aria-label="Current expression"></div>
+  <div id="expression" class="expression"></div>
 
-  <div id="buttons" role="group" aria-label="Operation buttons">
+  <div id="buttons" class="buttons">
     <button onclick="addOp('+')">+</button>
-    <button onclick="addOp('-')">−</button>
-    <button onclick="addOp('*')">×</button>
-    <button onclick="addOp('/')">÷</button>
+    <button onclick="addOp('-')">-</button>
+    <button onclick="addOp('*')">*</button>
+    <button onclick="addOp('/')">/</button>
     <button onclick="addOp('(')">(</button>
     <button onclick="addOp(')')">)</button>
-    <button onclick="backspace()">⌫</button>
+    <button onclick="backspace()">←</button>
     <button onclick="clearExpression()">Clear</button>
-    <button onclick="submitExpression()">Submit</button>
+    <button id="submit-btn">Submit</button>
   </div>
 
-  <div id="live-result" aria-live="polite" aria-atomic="true"></div>
-  <div id="score"></div>
-  <div id="streak"></div>
+  <div id="live-result" class="live-result"></div>
+
+  <div id="score-stats" class="score-stats">
+    <div>Score: <span id="score">-</span></div>
+    <div>Streak: <span id="streak">0</span></div>
+  </div>
 
   <h2>Results</h2>
-  <table id="results-table" aria-label="Your submissions">
+  <table id="results-table">
     <thead>
       <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <h2>Archive (Last 30 Days)</h2>
-  <pre id="archive" aria-live="polite" aria-atomic="true"></pre>
-
-  <button id="toggle-dark" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+  <h2>Archive (Last 30 days)</h2>
+  <div id="archive" class="archive"></div>
 
   <script src="script.js"></script>
 </body>
