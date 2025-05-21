@@ -1,245 +1,175 @@
-/* Reset & base */
+/* Reset */
 * {
   box-sizing: border-box;
 }
 
 body {
+  background: #121212;
+  color: #eee;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 1rem;
-  background: #fafafa;
-  color: #222;
-  transition: background 0.3s, color 0.3s;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0;
+  padding: 1rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-h1, h2 {
-  text-align: center;
+h1 {
+  font-size: 3rem;
   margin-bottom: 0.5rem;
 }
 
-/* Target number big and centered */
-#target {
-  font-size: 3.5rem;
-  font-weight: 700;
+.target {
+  font-size: 4rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #ffcc00;
   text-align: center;
-  margin: 1rem 0 1.5rem 0;
-  color: #3f51b5;
-  user-select: none;
 }
 
-/* Dice container */
-#dice-container {
+.dice-container {
   display: flex;
   justify-content: center;
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
-/* Dice colors and style like horse racing numbers */
 .dice {
-  width: 50px;
-  height: 50px;
-  font-weight: 700;
-  font-size: 1.8rem;
+  width: 60px;
+  height: 60px;
   border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  user-select: none;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
-  cursor: pointer;
-  border: 3px solid transparent;
-  transition: border-color 0.3s;
-}
-
-.dice.used {
-  border-color: #ff9800;
-}
-
-/* Dice colors by value */
-.dice[data-value="1"] { background: #d32f2f; /* red */ }
-.dice[data-value="2"] { background: #fafafa; color: #222; border: 3px solid #999; /* white */ }
-.dice[data-value="3"] { background: #1976d2; /* blue */ }
-.dice[data-value="4"] { background: #fbc02d; color: #222; /* yellow */ }
-.dice[data-value="5"] { background: #388e3c; /* green */ }
-.dice[data-value="6"] {
-  background: #000;
-  color: #fbc02d; /* black bg, yellow number */
-  font-weight: 900;
-}
-
-/* Expression display */
-#expression {
-  font-size: 1.8rem;
-  margin: 1rem auto;
+  font-size: 2.5rem;
+  font-weight: bold;
+  line-height: 60px;
   text-align: center;
-  min-height: 2.2rem;
-  user-select: text;
-  border: 1px solid #ccc;
-  padding: 0.3rem 0.5rem;
-  border-radius: 6px;
-  max-width: 100%;
-  word-wrap: break-word;
-  background: #f0f0f0;
+  user-select: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: 2px solid #ddd;
+  color: black;
 }
 
-/* Buttons */
-#buttons {
+/* Horse racing colors for dice (number: background-color, color) */
+.dice[data-num="1"] { background: #e63946; color: white; }
+.dice[data-num="2"] { background: black; color: #ffcc00; } /* Black bg, yellow number */
+.dice[data-num="3"] { background: #457b9d; color: white; }
+.dice[data-num="4"] { background: #f1fa3c; color: black; }
+.dice[data-num="5"] { background: #2a9d8f; color: white; }
+.dice[data-num="6"] { background: #a8dadc; color: black; }
+
+/* Used dice */
+.dice.used {
+  background: #222 !important;
+  color: #555 !important;
+  cursor: default;
+  text-decoration: line-through;
+  border-color: #555;
+}
+
+.expression {
+  font-size: 2rem;
+  min-height: 40px;
+  margin-bottom: 0.5rem;
+  background: #222;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  width: 100%;
+  max-width: 400px;
+  user-select: none;
+  overflow-x: auto;
+}
+
+.buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-  margin: 1rem 0 2rem 0;
+  gap: 0.75rem;
+  max-width: 400px;
+  margin-bottom: 1rem;
 }
 
-#buttons button {
+.buttons button {
   font-size: 1.5rem;
-  padding: 0.8rem 1.2rem;
-  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
   border: none;
-  cursor: pointer;
-  background-color: #3f51b5;
+  border-radius: 6px;
+  background: #2a9d8f;
   color: white;
-  flex: 1 0 60px;
-  max-width: 80px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  cursor: pointer;
+  flex: 1 1 60px;
+  max-width: 70px;
   transition: background-color 0.3s ease;
   user-select: none;
 }
 
-#buttons button:hover, #buttons button:focus {
-  background-color: #303f9f;
-  outline: none;
+.buttons button:hover:not(:disabled) {
+  background: #21867a;
 }
 
-/* Live result */
-#live-result {
+.buttons button:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+.live-result {
   font-size: 1.3rem;
-  text-align: center;
-  margin-bottom: 0.6rem;
-  min-height: 1.4rem;
-  font-weight: 600;
-  user-select: none;
-}
-
-/* Score and streak */
-#score, #streak {
-  font-size: 1.2rem;
-  text-align: center;
-  font-weight: 600;
+  min-height: 24px;
   margin-bottom: 1rem;
-  user-select: none;
+  color: #ffd166;
+  font-weight: bold;
+  max-width: 400px;
+  text-align: center;
 }
 
-/* Results table */
+.score-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+}
+
 #results-table {
   width: 100%;
+  max-width: 600px;
   border-collapse: collapse;
   margin-bottom: 2rem;
 }
 
 #results-table th, #results-table td {
-  border: 1px solid #ddd;
-  padding: 0.5rem 0.7rem;
+  border: 1px solid #444;
+  padding: 0.5rem 0.75rem;
   text-align: center;
   font-size: 1rem;
-  word-break: break-word;
 }
 
-#results-table th {
-  background-color: #3f51b5;
-  color: white;
+#results-table tbody tr:nth-child(even) {
+  background: #1e1e1e;
 }
 
-/* Archive */
-#archive {
-  white-space: pre-wrap;
-  background-color: #e0e0e0;
-  padding: 1rem;
-  border-radius: 8px;
-  font-family: monospace;
-  max-height: 200px;
-  overflow-y: auto;
-  user-select: none;
-  margin-bottom: 2rem;
-}
-
-/* Dark mode */
-body.dark-mode {
-  background: #121212;
-  color: #eee;
-}
-
-body.dark-mode #target {
-  color: #7986cb;
-}
-
-body.dark-mode #dice-container {
-  /* no change */
-}
-
-body.dark-mode .dice[data-value="2"] {
-  background: #222;
-  color: #eee;
-  border: 3px solid #666;
-}
-
-body.dark-mode #expression {
-  background: #333;
-  border-color: #555;
-  color: #eee;
-}
-
-body.dark-mode #buttons button {
-  background-color: #7986cb;
-  color: #222;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.7);
-}
-
-body.dark-mode #buttons button:hover, body.dark-mode #buttons button:focus {
-  background-color: #5c6bc0;
-  color: #eee;
-}
-
-body.dark-mode #results-table th {
-  background-color: #3949ab;
-}
-
-body.dark-mode #results-table td, 
-body.dark-mode #results-table th {
-  border-color: #555;
-}
-
-body.dark-mode #archive {
-  background-color: #222;
+.archive {
+  max-width: 600px;
+  width: 100%;
   color: #ccc;
+  font-size: 1rem;
 }
 
-body.dark-mode #live-result, 
-body.dark-mode #score, 
-body.dark-mode #streak {
-  color: #a5d6a7;
+.archive .day {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #333;
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-  #buttons button {
-    flex: 1 0 45px;
-    max-width: 60px;
-    font-size: 1.2rem;
-    padding: 0.6rem 0.8rem;
-  }
+.archive .day.perfect {
+  background: #1a4620;
+  color: #90ee90;
+  font-weight: bold;
+}
 
-  #target {
-    font-size: 2.5rem;
-  }
-
-  .dice {
-    width: 40px;
-    height: 40px;
-    font-size: 1.5rem;
-  }
+.archive .day .checkmark {
+  color: #90ee90;
+  font-weight: bold;
+  margin-left: 0.4rem;
 }
