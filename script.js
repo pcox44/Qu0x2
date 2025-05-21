@@ -1,389 +1,301 @@
-// Daily Dice Game with archive, horse race dice colors, black out used dice, live evaluation, and stats.
-
-// Constants & Utilities
-const HORSE_RACE_COLORS = {
-  1: { bg: "#e63946", color: "white" }, // red bg, white text
-  2: { bg: "black", color: "#ffcc00" }, // black bg, yellow text
-  3: { bg: "#457b9d", color: "white" }, // blue bg, white text
-  4: { bg: "#f1fa3c", color: "black" }, // yellow bg, black text
-  5: { bg: "#2a9d8f", color: "white" }, // greenish bg, white text
-  6: { bg: "#a8dadc", color: "black" }, // light cyan bg, black text
-};
-
-const maxArchiveDays = 30;
-
-let expression = "";
-let submissions = []; // array of {expr, result, score}
-let streak = 0;
-
-let target = 0;
-let dice = [];
-
 const diceContainer = document.getElementById("dice-container");
 const expressionDiv = document.getElementById("expression");
 const liveResultDiv = document.getElementById("live-result");
-const targetDiv = document.getElementById("target");
+const scoreDisplay = document.getElementById("score-display");
 const resultsTableBody = document.querySelector("#results-table tbody");
-const scoreSpan = document.getElementById("score");
-const streakSpan = document.getElementById("streak");
 const archiveDiv = document.getElementById("archive");
-const submitBtn = document.getElementById("submit-btn");
+const targetDiv = document.getElementById("target");
+const buttonsDiv = document.getElementById("buttons");
 
-// Get YYYY-MM-DD string from date
-function getDateKey(date) {
-  return date.toISOString().slice(0, 10);
-}
+let dice = [];
+let target = 0;
+let expression = "";
+let submissions = [];
+let streak = 0;
+const maxArchiveDays = 30;
 
-// Seeded random number generator (Mulberry32)
-function mulberry32(seed) {
-  return function() {
-    var t = seed += 0x6D2B79F5;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+// Horse race colors keyed by dice value for easy reference
+const diceColors = {
+  1: "#CC0000",
+  2: "#003399",
+  3: "#009933",
+  4: "#FFCC00",
+  5: "#660066",
+  6: "#FF6600"
+};
 
-// Generate today's puzzle (dice + target) seeded by date
+// Generate dice and target for given date (seeded)
 function generateDiceAndTarget(date) {
-  const seed = Number(date.toISOString().slice(0,10).replace(/-/g,""));
-  const rng = mulberry32(seed);
-
-  // roll 5 dice (1-6)
-  dice = [];
-  for (let i=0; i<5; i++) {
-    dice.push(Math.floor(rng()*6)+1);
+  // Simple seeded random for consistency per day
+  function seedRandom(seed) {
+    let x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
   }
-
-  // target from 1 to 100
-  target = Math.floor(rng()*100)+1;
-
+  const seed = date.getFullYear() * 10000 + (date.getMonth()+1) * 100 + date.getDate();
+  dice = [];
+  for (let i = 0; i < 5; i++) {
+    const val = Math.floor(seedRandom(seed + i) * 6) + 1;
+    dice.push(val);
+  }
+  // Target from 50 to 250 (bigger range)
+  target = Math.floor(seedRandom(seed + 10) * 201) + 50;
   targetDiv.textContent = `Target: ${target}`;
-
-  renderDice();
 }
 
 // Render dice, black out used dice
 function renderDice() {
   diceContainer.innerHTML = "";
-  const usedNums = getUsedDiceNumbers();
-  for (let d of dice) {
+  const usedCounts = getUsedDiceCounts(expression);
+  dice.forEach((d,i) => {
     const die = document.createElement("div");
-    die.className = "dice";
+    die.className = "die";
     die.textContent = d;
-    die.dataset.num = d;
-    // apply horse racing colors by data-num
-    const c = HORSE_RACE_COLORS[d];
-    if (!usedNums.includes(d)) {
-      die.style.backgroundColor = c.bg;
-      die.style.color = c.color;
-      die.classList.remove("used");
-    } else {
-      // used dice blacked out
-      die.style.backgroundColor = "#222";
-      die.style.color = "#555";
+    die.dataset.value = d;
+    die.style.color = diceColors[d];
+    // Black out if used up
+    if ((usedCounts[d] || 0) >= dice.filter(x => x===d).length) {
       die.classList.add("used");
+      die.style.color = "white";
     }
+    die.addEventListener("click", () => {
+      if (!die.classList.contains("used")) addOp(d.toString());
+    });
     diceContainer.appendChild(die);
-  }
+  });
 }
 
-// Get used dice numbers from expression
-function getUsedDiceNumbers() {
-  let counts = {};
-  for (let d of dice) {
-    counts[d] = (counts[d] || 0) + 1;
-  }
-  // Count usage in expression (digits only)
-  let exprNums = expression.match(/\d/g) || [];
-  let used = [];
-
-  // Count each digit used
-  for (let n of exprNums) {
-    let num = Number(n);
-    if (counts[num] && counts[num] > 0) {
-      used.push(num);
-      counts[num]--;
+// Get counts of used dice digits in current expression
+function getUsedDiceCounts(expr) {
+  const counts = {};
+  for (let ch of expr) {
+    if ("123456".includes(ch)) {
+      counts[ch] = (counts[ch] || 0) + 1;
     }
   }
-  return used;
+  return counts;
 }
 
-// Validate the expression syntax, check dice usage and evaluate result
-// Returns {valid: bool, message: string, value: number or NaN}
-function validateExpression(expr) {
-  if (expr.length === 0) {
-    return { valid: false, message: "Expression is empty", value: NaN };
-  }
-  // Only allowed chars: digits 1-6, +-*/() whitespace
-  if (!/^[1-6+\-*/()\s]+$/.test(expr)) {
-    return { valid: false, message: "Invalid characters in expression", value: NaN };
-  }
-  // Check dice usage counts
-  let diceCounts = {};
-  for (let d of dice) diceCounts[d] = (diceCounts[d]||0) + 1;
-
-  let exprNums = expr.match(/\d/g) || [];
-  let exprCounts = {};
-  for (let n of exprNums) exprCounts[n] = (exprCounts[n]||0) + 1;
-
-  for (let n in exprCounts) {
-    if ((exprCounts[n]||0) > (diceCounts[n]||0)) {
-      return { valid: false, message: `Used digit ${n} more times than available`, value: NaN };
-    }
-  }
-
-  // Try to evaluate the expression safely
-  try {
-    // eslint-disable-next-line no-new-func
-    let val = Function(`"use strict"; return (${expr})`)();
-    if (typeof val !== "number" || isNaN(val) || !isFinite(val)) {
-      return { valid: false, message: "Expression does not evaluate to a finite number", value: NaN };
-    }
-    return { valid: true, message: "", value: val };
-  } catch(e) {
-    return { valid: false, message: "Syntax error in expression", value: NaN };
-  }
-}
-
-// Add operator or digit to expression
+// Add operation or digit to expression
 function addOp(op) {
   expression += op;
-  updateDisplay();
+  updateExpression();
 }
 
 // Backspace last character
 function backspace() {
   expression = expression.slice(0, -1);
-  updateDisplay();
+  updateExpression();
 }
 
 // Clear expression
 function clearExpression() {
   expression = "";
-  updateDisplay();
+  updateExpression();
+  liveResultDiv.textContent = "";
+  scoreDisplay.textContent = "";
 }
 
-// Update expression display and live evaluation
-function updateDisplay() {
-  expressionDiv.textContent = expression || "Type your expression...";
-  updateUsedDice();
-  updateLiveResult();
-  updateButtonsDisabled();
+// Try evaluate expression safely
+function tryEvaluate(expr) {
+  // Only allow numbers, + - * / () spaces
+  if (!/^[0-9+\-*/()\s]+$/.test(expr)) return null;
+  // Check dice counts not exceeded
+  const counts = getUsedDiceCounts(expr);
+  for (let d in counts) {
+    const countInDice = dice.filter(x => x === Number(d)).length;
+    if (counts[d] > countInDice) return null;
+  }
+  try {
+    // eslint-disable-next-line no-eval
+    let val = eval(expr);
+    if (typeof val === "number" && isFinite(val)) {
+      return val;
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }
 
-// Update used dice coloring (black out used dice)
-function updateUsedDice() {
+// Update expression display, live result, and dice blackening
+function updateExpression() {
+  expressionDiv.textContent = expression;
+  const val = tryEvaluate(expression);
+  if (val === null) {
+    liveResultDiv.textContent = "Invalid expression";
+    liveResultDiv.style.color = "red";
+    scoreDisplay.textContent = "";
+  } else {
+    liveResultDiv.textContent = `Result: ${val.toFixed(4)}`;
+    liveResultDiv.style.color = "#333";
+    const diff = Math.abs(val - target);
+    scoreDisplay.textContent = `Score (difference): ${diff.toFixed(4)}`;
+    scoreDisplay.style.color = diff === 0 ? "green" : "#004488";
+  }
   renderDice();
 }
 
-// Update live evaluation and show result or error message
-function updateLiveResult() {
-  if (expression.length === 0) {
-    liveResultDiv.textContent = "";
-    scoreSpan.textContent = "-";
-    return;
-  }
-  let v = validateExpression(expression);
-  if (v.valid) {
-    liveResultDiv.textContent = `= ${v.value.toFixed(4)}`;
-    scoreSpan.textContent = Math.abs(target - v.value).toFixed(4);
-  } else {
-    liveResultDiv.textContent = `Error: ${v.message}`;
-    scoreSpan.textContent = "-";
+// Check if expressions are mathematically equivalent ignoring commutativity of + and *
+function canonicalForm(expr) {
+  // Remove spaces
+  expr = expr.replace(/\s+/g, "");
+
+  // A naive way: parse and sort add and multiply operands, but to keep it simple:
+  // We'll just normalize + and * operands sorted alphabetically in a very simple way.
+  // This is a very rough approximation to avoid duplicates like 3+5 and 5+3.
+  // For better solution, you'd use a math parser library.
+
+  try {
+    // Replace all "-" with "+-" for split
+    // Handle only + at top level, split by top-level +, then sort operands alphabetically
+    let stack = [];
+    let parts = [];
+    let lastIndex = 0;
+    for (let i = 0; i < expr.length; i++) {
+      let c = expr[i];
+      if (c === '(') stack.push('(');
+      else if (c === ')') stack.pop();
+      else if (c === '+' && stack.length === 0) {
+        parts.push(expr.slice(lastIndex, i));
+        lastIndex = i + 1;
+      }
+    }
+    parts.push(expr.slice(lastIndex));
+    parts = parts.map(p => p.trim()).filter(p => p !== "");
+    parts.sort();
+
+    return parts.join("+");
+  } catch {
+    return expr;
   }
 }
 
-// Enable or disable buttons if needed (no disable now, but for future)
-function updateButtonsDisabled() {
-  // no disabling for now
-}
-
-// Submit expression handler
+// Submit current expression
 function submitExpression() {
-  let v = validateExpression(expression);
-  if (!v.valid) {
-    alert("Invalid expression:\n" + v.message);
+  const val = tryEvaluate(expression);
+  if (val === null) {
+    alert("Invalid expression or uses dice too many times.");
     return;
   }
-  let scoreVal = Math.abs(target - v.value);
+  const diff = Math.abs(val - target);
+  const cform = canonicalForm(expression);
 
-  // Check for duplicate solution (order independent)
-  // We'll sort tokens (numbers + ops) ignoring whitespace and parentheses
-  let normExpr = normalizeExpression(expression);
-
-  if (submissions.some(s => normalizeExpression(s.expr) === normExpr)) {
+  // Check if duplicate solution for today
+  if (submissions.some(s => s.canonical === cform)) {
     alert("You already submitted this solution!");
     return;
   }
 
-  submissions.push({
-    expr: expression,
-    result: v.value,
-    score: scoreVal,
-  });
+  submissions.push({ expr: expression, result: val, diff, canonical: cform });
 
-  if (scoreVal === 0) {
+  if (diff === 0) {
     streak++;
   } else {
     streak = 0;
   }
-
-  saveGame();
-  expression = "";
-  updateDisplay();
-  renderResultsTable();
-  updateScoreStreak();
+  saveData();
+  renderResults();
   renderArchive();
+  clearExpression();
 }
 
-// Normalize expression for uniqueness check
-// Lowercase, remove spaces, sort tokens (digits and ops separately)
-function normalizeExpression(expr) {
-  // Remove whitespace
-  let cleaned = expr.replace(/\s+/g, "");
-  // Tokenize digits and operators separately
-  let tokens = cleaned.match(/(\d+|[+\-*/()])/g) || [];
-  // Separate digits and operators, then sort digits, then combine back
-  let digits = tokens.filter(t => /^[1-6]+$/.test(t)).sort();
-  let ops = tokens.filter(t => /^[+\-*/()]$/.test(t));
-  // Combine sorted digits with ops in order they appear (ops stay same pos)
-  // To keep simple, just join digits sorted + ops joined after
-  return digits.join("") + ops.join("");
-}
-
-// Render results table
-function renderResultsTable() {
+// Render submissions table
+function renderResults() {
   resultsTableBody.innerHTML = "";
-  submissions.forEach((s,i) => {
+  submissions.forEach((s, i) => {
     const tr = document.createElement("tr");
-    const indexTd = document.createElement("td");
-    indexTd.textContent = i+1;
+    const idxTd = document.createElement("td");
+    idxTd.textContent = i + 1;
     const exprTd = document.createElement("td");
     exprTd.textContent = s.expr;
-    const resultTd = document.createElement("td");
-    resultTd.textContent = s.result.toFixed(4);
+    const resTd = document.createElement("td");
+    resTd.textContent = s.result.toFixed(4);
     const scoreTd = document.createElement("td");
-    scoreTd.textContent = s.score.toFixed(4);
-
-    tr.appendChild(indexTd);
+    scoreTd.textContent = s.diff.toFixed(4);
+    tr.appendChild(idxTd);
     tr.appendChild(exprTd);
-    tr.appendChild(resultTd);
+    tr.appendChild(resTd);
     tr.appendChild(scoreTd);
     resultsTableBody.appendChild(tr);
   });
 }
 
-// Update score and streak display
-function updateScoreStreak() {
-  if (submissions.length === 0) {
-    scoreSpan.textContent = "-";
-  } else {
-    // Show best score so far
-    let best = submissions.reduce((acc,s) => s.score < acc ? s.score : acc, submissions[0].score);
-    scoreSpan.textContent = best.toFixed(4);
-  }
-  streakSpan.textContent = streak;
+// Save data (submissions, streak, archive) to localStorage by date
+function saveData() {
+  const todayStr = getTodayStr();
+  localStorage.setItem("daily-dice-submissions-" + todayStr, JSON.stringify(submissions));
+  localStorage.setItem("daily-dice-streak", streak);
+  updateArchive(todayStr, submissions);
 }
 
-// Save game state to localStorage
-function saveGame() {
-  const data = {
-    submissions,
-    streak,
-    target,
-    dice,
-    dateKey: getDateKey(new Date()),
-  };
-  localStorage.setItem("dailyDiceGame", JSON.stringify(data));
+// Load data for today from localStorage
+function loadData() {
+  const todayStr = getTodayStr();
+  const subData = localStorage.getItem("daily-dice-submissions-" + todayStr);
+  submissions = subData ? JSON.parse(subData) : [];
+  streak = Number(localStorage.getItem("daily-dice-streak") || "0");
 }
 
-// Load game state from localStorage (only if today's date)
-function loadGame() {
-  let dataRaw = localStorage.getItem("dailyDiceGame");
-  if (!dataRaw) return;
-  try {
-    let data = JSON.parse(dataRaw);
-    if (data.dateKey === getDateKey(new Date())) {
-      submissions = data.submissions || [];
-      streak = data.streak || 0;
-      target = data.target || target;
-      dice = data.dice || dice;
-      renderDice();
-      renderResultsTable();
-      updateScoreStreak();
-      renderArchive();
-    } else {
-      // Old date, clear storage
-      localStorage.removeItem("dailyDiceGame");
-    }
-  } catch {
-    localStorage.removeItem("dailyDiceGame");
-  }
+// Get date as YYYY-MM-DD string
+function getTodayStr() {
+  const d = new Date();
+  return d.toISOString().slice(0, 10);
 }
 
-// Render archive summary for last 30 days
+// Archive data structure keyed by date
+let archiveData = {};
+
+// Update archive data with today's submissions
+function updateArchive(dateStr, submissions) {
+  archiveData[dateStr] = submissions;
+  // Save only last 30 days in archiveData
+  const keys = Object.keys(archiveData).sort().slice(-maxArchiveDays);
+  const newArchive = {};
+  keys.forEach(k => {
+    newArchive[k] = archiveData[k];
+  });
+  archiveData = newArchive;
+  localStorage.setItem("daily-dice-archive", JSON.stringify(archiveData));
+}
+
+// Load archive from localStorage
+function loadArchive() {
+  const arch = localStorage.getItem("daily-dice-archive");
+  archiveData = arch ? JSON.parse(arch) : {};
+}
+
+// Render archive nicely with checkmarks and count of unique solutions
 function renderArchive() {
   archiveDiv.innerHTML = "";
-
-  const today = new Date();
-  let archiveEntries = [];
-
-  // Load all localStorage keys for dailyDiceGame_YYYY-MM-DD or just one storage key?
-  // We only have one storage key "dailyDiceGame" for today,
-  // So we can't get past days submissions from localStorage.
-  // We must store archive as well.
-  // We'll store archive in localStorage key 'dailyDiceArchive'
-
-  let archiveRaw = localStorage.getItem("dailyDiceArchive");
-  let archive = archiveRaw ? JSON.parse(archiveRaw) : {};
-
-  // Add today's entry
-  const todayKey = getDateKey(today);
-  archive[todayKey] = archive[todayKey] || { count: 0, perfect: false };
-  archive[todayKey].count = submissions.length;
-  archive[todayKey].perfect = submissions.some(s => s.score === 0);
-
-  // Clean archive older than 30 days
-  const cutoffDate = new Date(today.getTime() - maxArchiveDays*86400000);
-  for (let dayKey in archive) {
-    let d = new Date(dayKey);
-    if (d < cutoffDate) delete archive[dayKey];
+  const keys = Object.keys(archiveData).sort().reverse().slice(0, maxArchiveDays);
+  if (keys.length === 0) {
+    archiveDiv.textContent = "No archive data yet.";
+    return;
   }
-
-  // Save back archive
-  localStorage.setItem("dailyDiceArchive", JSON.stringify(archive));
-
-  // Sort keys descending (most recent first)
-  const keysSorted = Object.keys(archive).sort((a,b) => b.localeCompare(a));
-
-  // Show archive entries (max 30)
-  for (let i = 0; i < Math.min(keysSorted.length, maxArchiveDays); i++) {
-    let day = keysSorted[i];
-    let entry = archive[day];
+  keys.forEach(day => {
     const div = document.createElement("div");
-    div.className = "day" + (entry.perfect ? " perfect" : "");
-    div.textContent = `${day}: ${entry.count} solution${entry.count === 1 ? "" : "s"}`;
-    if (entry.perfect) {
-      const check = document.createElement("span");
-      check.className = "checkmark";
-      check.textContent = " ✓";
-      div.appendChild(check);
+    div.className = "day";
+    const subm = archiveData[day] || [];
+    const perfectCount = subm.filter(s => s.diff === 0).length;
+    const uniqueCount = subm.length;
+    div.innerHTML = `<strong>${day}</strong>: ${uniqueCount} solution${uniqueCount !== 1 ? 's' : ''}`;
+    if (perfectCount > 0) {
+      div.innerHTML += ` <span class="perfect">Perfect! &#10003;</span>`;
+      div.innerHTML += ` (${perfectCount} perfect solution${perfectCount !== 1 ? 's' : ''})`;
     }
     archiveDiv.appendChild(div);
-  }
+  });
 }
 
-// Init
+// Initialize
 function init() {
   generateDiceAndTarget(new Date());
-  loadGame();
-  updateDisplay();
-  renderResultsTable();
-  updateScoreStreak();
+  loadData();
+  loadArchive();
+  renderDice();
+  renderResults();
   renderArchive();
+  updateExpression();
 }
-
-submitBtn.addEventListener("click", submitExpression);
 
 init();
