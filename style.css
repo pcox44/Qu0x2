@@ -1,47 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Daily Dice Game</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-  <h1>🎲 Daily Dice Game</h1>
-  <p class="rules">
-    Use all five dice exactly once with any combination of operations and parentheses to get as close as possible to the target number (1–100). Dice may be used in any order, but numbers must be separated by operators — no multi-digit numbers. You may try as many times as you'd like. Your score is the absolute difference from the target. A perfect solution (score 0) increases your streak.
-  </p>
-  <div id="target-container"><strong>Target:</strong> <span id="target"></span></div>
-  <div id="dice-container"></div>
-  <div id="expression"></div>
-  <div id="buttons">
-    <div id="operator-buttons">
-      <button onclick="addOp('+')">+</button>
-      <button onclick="addOp('-')">−</button>
-      <button onclick="addOp('*')">×</button>
-      <button onclick="addOp('/')">÷</button>
-      <button onclick="addOp('(')">(</button>
-      <button onclick="addOp(')')">)</button>
-    </div>
-    <button onclick="backspace()">←</button>
-    <button onclick="clearExpression()">Clear</button>
-    <button onclick="submitExpression()">Submit</button>
-  </div>
-  <div id="live-result"></div>
-  <div id="score"></div>
-  <div id="streak"></div>
+body {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  background: #f8f9fa;
+  color: #222;
+}
 
-  <h2>Today's Attempts</h2>
-  <table id="results-table">
-    <thead>
-      <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+h1 {
+  text-align: center;
+}
 
-  <h2>Archive</h2>
-  <div id="archive"></div>
+#target-container {
+  font-size: 1.5em;
+  text-align: center;
+  margin: 1em 0;
+}
 
-  <script src="script.js"></script>
-</body>
-</html>
+#dice-container {
+  display: flex;
+  justify-content: center;
+  margin: 1em 0;
+}
+
+.die {
+  font-size: 2em;
+  margin: 0.3em;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.die.used {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.die-1 { background: red; }
+.die-2 { background: white; color: black; border: 2px solid black; }
+.die-3 { background: blue; }
+.die-4 { background: yellow; color: black; }
+.die-5 { background: green; }
+.die-6 { background: black; color: yellow; }
+
+#expression {
+  font-size: 1.3em;
+  min-height: 30px;
+  text-align: center;
+  margin: 1em 0;
+  word-wrap: break-word;
+}
+
+#buttons {
+  text-align: center;
+  margin: 1em 0;
+}
+
+#buttons button {
+  font-size: 1.2em;
+  margin: 0.3em;
+  padding: 0.6em 1em;
+  border: none;
+  border-radius: 6px;
+  background-color: #ddd;
+  cursor: pointer;
+}
+
+#buttons button:hover {
+  background-color: #ccc;
+}
+
+#live-result, #score, #streak {
+  text-align: center;
+  margin-top: 1em;
+  font-size: 1.2em;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1em;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 0.5em;
+  text-align: center;
+}
+
+.rules {
+  font-size: 0.9em;
+  background: #eef;
+  padding: 0.5em;
+  border-radius: 6px;
+  margin-bottom: 1em;
+}
