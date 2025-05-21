@@ -1,185 +1,58 @@
-/* General layout */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #121212;
-  color: #eee;
-  margin: 0;
+  font-family: Arial, sans-serif;
+  text-align: center;
   padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-  box-sizing: border-box;
+  background: #f4f4f4;
+  color: #333;
 }
 
 h1 {
-  margin-bottom: 10px;
-  font-weight: 700;
-  letter-spacing: 1.1px;
-}
-
-#target-container {
-  font-size: 1.8rem;
-  margin-bottom: 15px;
-  font-weight: 600;
+  font-size: 2rem;
 }
 
 #dice-container {
   display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
+  justify-content: center;
+  margin: 20px 0;
 }
 
-.dice {
-  width: 60px;
-  height: 60px;
+.die {
+  width: 50px;
+  height: 50px;
+  margin: 0 10px;
+  font-size: 1.5rem;
+  line-height: 50px;
   border-radius: 10px;
-  font-size: 2.4rem;
-  font-weight: 700;
   color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  user-select: none;
-  box-shadow: 0 3px 7px rgba(0,0,0,0.6);
-  border: 3px solid transparent;
-  cursor: default;
-}
-
-/* Horse racing dice colors */
-
-.dice-1 {
-  background: #D60000; /* Red */
-  border-color: #800000;
-}
-
-.dice-2 {
-  background: #F0F0F0; /* White */
-  color: #222;
-  border-color: #999;
-}
-
-.dice-3 {
-  background: #000080; /* Blue */
-  border-color: #00004D;
-}
-
-.dice-4 {
-  background: #FFD700; /* Yellow */
-  color: #222;
-  border-color: #B8860B;
-}
-
-.dice-5 {
-  background: #008000; /* Green */
-  border-color: #004d00;
-}
-
-.dice-6 {
-  background: #000000; /* Black background */
-  color: #FFD700; /* Yellow number */
-  border-color: #FFD700;
-}
-
-#input-container {
-  margin-bottom: 20px;
-  width: 100%;
-  max-width: 600px;
-}
-
-#expression-input {
-  width: 100%;
-  font-size: 1.6rem;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  background: #222;
-  color: #eee;
-  user-select: none;
-}
-
-.button-row {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
-  max-width: 600px;
-}
-
-button {
-  padding: 12px 20px;
-  font-size: 1.4rem;
-  border-radius: 8px;
-  border: none;
-  background: #444;
-  color: #eee;
   cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s ease;
+  transition: transform 0.1s ease;
 }
 
-button:hover:not(:disabled) {
-  background: #666;
-}
-
-button:disabled {
-  background: #222;
-  color: #555;
-  cursor: default;
-}
-
-#result-message {
-  font-size: 1.6rem;
-  margin: 15px 0;
-  font-weight: 600;
-  min-height: 28px;
-}
-
-#score-container,
-#streak-container {
-  font-size: 1.2rem;
-  margin: 5px 0 15px;
-}
-
-#archive-container {
-  max-width: 600px;
-  width: 100%;
-  background: #222;
-  padding: 10px;
-  border-radius: 10px;
-  max-height: 300px;
-  overflow-y: auto;
-  font-size: 1rem;
-  font-family: monospace;
-  color: #ddd;
-}
-
-.archive-item {
-  border-bottom: 1px solid #444;
-  padding: 5px 0;
-}
-
-.archive-date {
-  font-weight: 700;
-  color: #fff;
-}
-
-.archive-score {
-  margin-left: 10px;
-  color: #6cf;
-}
-
-.archive-solution {
-  margin-left: 15px;
-  font-style: italic;
-  color: #aaa;
-}
-
-/* Used numbers styling */
-.used {
+.die.used {
+  opacity: 0.4;
   text-decoration: line-through;
-  opacity: 0.5;
-  pointer-events: none;
+}
+
+#expression {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.buttons button {
+  margin: 5px;
+  padding: 10px 15px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+#result,
+#score,
+#streak {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+#archive {
+  margin-top: 20px;
+  font-size: 0.9rem;
 }
