@@ -12,7 +12,10 @@
 
   <div id="dice-container" class="dice-container"></div>
 
-  <div id="expression" class="expression"></div>
+  <div id="expression" class="expression" contenteditable="false" spellcheck="false"></div>
+  
+  <div id="live-result" class="live-result"></div>
+  <div id="score-display" class="score-display"></div>
 
   <div id="buttons" class="buttons">
     <button onclick="addOp('+')">+</button>
@@ -21,16 +24,9 @@
     <button onclick="addOp('/')">/</button>
     <button onclick="addOp('(')">(</button>
     <button onclick="addOp(')')">)</button>
-    <button onclick="backspace()">←</button>
+    <button onclick="backspace()">⌫</button>
     <button onclick="clearExpression()">Clear</button>
-    <button id="submit-btn">Submit</button>
-  </div>
-
-  <div id="live-result" class="live-result"></div>
-
-  <div id="score-stats" class="score-stats">
-    <div>Score: <span id="score">-</span></div>
-    <div>Streak: <span id="streak">0</span></div>
+    <button onclick="submitExpression()">Submit</button>
   </div>
 
   <h2>Results</h2>
@@ -41,7 +37,7 @@
     <tbody></tbody>
   </table>
 
-  <h2>Archive (Last 30 days)</h2>
+  <h2>Archive (last 30 days)</h2>
   <div id="archive" class="archive"></div>
 
   <script src="script.js"></script>
