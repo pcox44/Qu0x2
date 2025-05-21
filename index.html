@@ -1,33 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Daily Dice Game</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Dice Game</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Daily Dice Game</h1>
-  <div id="target-container">Target Number: <span id="target-number"></span></div>
+  <h1>🎲 Daily Dice Game</h1>
+  <div id="target"></div>
   <div id="dice-container"></div>
-  <div id="input-container">
-    <input type="text" id="expression-input" readonly />
+  <div id="expression"></div>
+  <div class="buttons">
+    <button onclick="addOp('+')">+</button>
+    <button onclick="addOp('-')">−</button>
+    <button onclick="addOp('*')">×</button>
+    <button onclick="addOp('/')">÷</button>
+    <button onclick="backspace()">⌫</button>
+    <button onclick="clearExpression()">Clear</button>
+    <button onclick="submitExpression()">Submit</button>
   </div>
-  <div id="buttons-container">
-    <div id="numbers-buttons" class="button-row"></div>
-    <div id="operations-buttons" class="button-row"></div>
-    <div id="control-buttons" class="button-row">
-      <button id="backspace-btn">Backspace</button>
-      <button id="clear-btn">Clear</button>
-      <button id="submit-btn">Submit</button>
-    </div>
-  </div>
-  <div id="result-message"></div>
-  <div id="score-container">Score: <span id="score-display">N/A</span></div>
-  <div id="streak-container">Streak (perfect 0s): <span id="streak-display">0</span></div>
-  <h2>Archive (past 30 days)</h2>
-  <div id="archive-container"></div>
-
-<script src="script.js"></script>
+  <div id="result"></div>
+  <div id="score"></div>
+  <div id="streak"></div>
+  <div id="archive"></div>
+  <script src="script.js"></script>
 </body>
 </html>
