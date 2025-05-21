@@ -6,19 +6,9 @@ const tableBody = document.querySelector("#results-table tbody");
 const bestScoreDisplay = document.getElementById("best-score");
 const streakDisplay = document.getElementById("streak");
 const dateInput = document.getElementById("date-select");
-const gameNumberDisplay = document.getElementById("game-number");
-const perfectCountDisplay = document.getElementById("perfect-count");
-
-const GAME_START_DATE = new Date("2025-05-16");
 
 let currentDate = new Date();
-if (currentDate < GAME_START_DATE) currentDate = new Date(GAME_START_DATE); // Don't allow before start date
-
 dateInput.valueAsDate = currentDate;
-
-// Disable future dates
-dateInput.max = new Date().toISOString().split("T")[0];
-dateInput.min = GAME_START_DATE.toISOString().split("T")[0];
 
 let expression = "";
 let usedDice = [];
@@ -73,12 +63,12 @@ function updateExpressionDisplay() {
   try {
     const val = eval(expression);
     if (!isNaN(val)) {
-      resultDisplay.textContent = `= ${+val.toFixed(4)}`;
+      resultDisplay.textContent = = ${+val.toFixed(4)};
     } else {
-      resultDisplay.textContent = ``;
+      resultDisplay.textContent = `;
     }
   } catch {
-    resultDisplay.textContent = ``;
+    resultDisplay.textContent = `;
   }
 }
 
@@ -90,22 +80,8 @@ function addOp(op) {
 }
 
 function backspace() {
-  if (expression.length === 0) return;
-  const lastChar = expression.slice(-1);
   expression = expression.slice(0, -1);
-
-  // If last char was a digit, remove from usedDice the die with that digit at the end
-  if (/\d/.test(lastChar)) {
-    // Find the die index for last digit from right to left
-    for (let i = usedDice.length - 1; i >= 0; i--) {
-      if (dice[usedDice[i]].toString() === lastChar) {
-        usedDice.splice(i, 1);
-        break;
-      }
-    }
-  }
   updateExpressionDisplay();
-  renderDice();
 }
 
 function clearExpression() {
@@ -118,13 +94,11 @@ function clearExpression() {
 function submitExpression() {
   try {
     const result = eval(expression);
-    if (isNaN(result)) return alert("Invalid expression.");
-
+    if (isNaN(result)) return;
     if (!validDiceUsage()) {
       alert("You must use each die exactly once.");
       return;
     }
-
     const score = Math.abs(target - result);
     saveAttempt(expression, result, score);
     clearExpression();
@@ -135,14 +109,10 @@ function submitExpression() {
 }
 
 function validDiceUsage() {
-  // Check that each die is used exactly once, by counting dice values in expression digits only
-  const numsUsed = expression.match(/\d/g) || [];
-  const usedDiceValues = usedDice.map(i => dice[i]);
-  if (numsUsed.length !== 5) return false;
-  // Sort and compare arrays
-  const sortedNumsUsed = numsUsed.map(Number).sort((a, b) => a - b);
-  const sortedDice = [...usedDiceValues].sort((a, b) => a - b);
-  return JSON.stringify(sortedNumsUsed) === JSON.stringify(sortedDice);
+  const numsUsed = expression.match(/\d+/g) || [];
+  const usedSorted = numsUsed.map(Number).sort((a, b) => a - b);
+  const diceSorted = [...dice].sort((a, b) => a - b);
+  return JSON.stringify(usedSorted) === JSON.stringify(diceSorted);
 }
 
 function saveAttempt(expr, result, score) {
@@ -150,4 +120,57 @@ function saveAttempt(expr, result, score) {
   const archive = JSON.parse(localStorage.getItem("archive") || "{}");
   if (!archive[dateKey]) archive[dateKey] = [];
   archive[dateKey].push({ expr, result, score });
-  localStorage.set
+  localStorage.setItem("archive", JSON.stringify(archive));
+
+  updateStreak(archive);
+}
+
+function updateStreak(archive) {
+  const today = new Date(dateInput.value);
+  let streak = 0;
+  for (let i = 0; i < 100; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split("T")[0];
+    if (
+      archive[key] &&
+      archive[key].some((a) => a.score === 0)
+    ) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  streakDisplay.textContent = 🔥 Streak: ${streak};
+}
+
+function loadAttempts() {
+  const dateKey = dateInput.value;
+  const archive = JSON.parse(localStorage.getItem("archive") || "{}");
+  const data = archive[dateKey] || [];
+
+  tableBody.innerHTML = "";
+  let bestScore = Infinity;
+
+  data.forEach((entry, i) => {
+    const row = document.createElement("tr");
+    row.innerHTML = <td>${i + 1}</td><td>${entry.expr}</td><td>${+entry.result.toFixed(4)}</td><td>${+entry.score.toFixed(4)}</td>;
+    tableBody.appendChild(row);
+    if (entry.score < bestScore) bestScore = entry.score;
+  });
+
+  bestScoreDisplay.textContent = 🎯 Best Score: ${+bestScore.toFixed(4)};
+}
+
+dateInput.addEventListener("change", () => {
+  currentDate = new Date(dateInput.value);
+  updateSeededGame(currentDate);
+  targetDisplay.textContent = Target: ${target};
+  clearExpression();
+  loadAttempts();
+});
+
+updateSeededGame(currentDate);
+targetDisplay.textContent = Target: ${target};
+renderDice();
+loadAttempts();
