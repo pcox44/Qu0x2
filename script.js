@@ -168,106 +168,16 @@ function checkAnswer() {
     saveProgress(diff);
 
   } catch (e) {
-    resultDiv.textContent = "Error evaluating expression.";
+    resultDiv.textContent = "Invalid expression.";
   }
 }
 
-function updateScore(diff) {
-  if (diff === "") {
+function updateScore(score) {
+  if (score === "") {
     scoreDiv.textContent = "";
     return;
   }
-  scoreDiv.textContent = `Your score (difference from target): ${diff}`;
+  scoreDiv.textContent = `Score (difference from target): ${score}`;
 }
 
-function updateStreak() {
-  const streak = localStorage.getItem("dailyDiceStreak") || 0;
-  streakDiv.textContent = `Current Streak: ${streak}`;
-}
-
-function saveProgress(diff) {
-  const todayKey = getTodayKey();
-  const bestScoreKey = "dailyDiceBestScore-" + todayKey;
-  const storedBest = localStorage.getItem(bestScoreKey);
-
-  if (storedBest === null || diff < Number(storedBest)) {
-    localStorage.setItem(bestScoreKey, diff);
-    addToArchive(todayKey, diff);
-  }
-
-  updateStreakAfter(diff);
-  updateArchive();
-}
-
-function updateStreakAfter(newScore) {
-  const todayKey = getTodayKey();
-  const yesterdayKey = getYesterdayKey();
-
-  const storedBestYesterday = localStorage.getItem("dailyDiceBestScore-" + yesterdayKey);
-
-  let streak = Number(localStorage.getItem("dailyDiceStreak") || 0);
-
-  if (storedBestYesterday !== null) {
-    if (newScore <= Number(storedBestYesterday)) {
-      streak += 1;
-    } else {
-      streak = 1;
-    }
-  } else {
-    streak = 1;
-  }
-
-  localStorage.setItem("dailyDiceStreak", streak);
-  updateStreak();
-}
-
-function getTodayKey() {
-  const estMidnight = getEasternMidnight();
-  return estMidnight.toISOString().slice(0, 10);
-}
-
-function getYesterdayKey() {
-  const estMidnight = getEasternMidnight();
-  estMidnight.setDate(estMidnight.getDate() - 1);
-  return estMidnight.toISOString().slice(0, 10);
-}
-
-function addToArchive(date, score) {
-  let archive = JSON.parse(localStorage.getItem("dailyDiceArchive") || "[]");
-  const found = archive.find((entry) => entry.date === date);
-  if (!found) {
-    archive.push({ date, score });
-    archive.sort((a,b) => b.date.localeCompare(a.date));
-    if (archive.length > 30) archive.pop();
-    localStorage.setItem("dailyDiceArchive", JSON.stringify(archive));
-  } else if (score < found.score) {
-    found.score = score;
-    localStorage.setItem("dailyDiceArchive", JSON.stringify(archive));
-  }
-}
-
-function updateArchive() {
-  const archive = JSON.parse(localStorage.getItem("dailyDiceArchive") || "[]");
-  if (archive.length === 0) {
-    archiveDiv.textContent = "No archive data yet.";
-    return;
-  }
-  archiveDiv.innerHTML = "<b>Archive (last 30 days):</b><br>" + 
-    archive.map(e => `${e.date}: Best Score = ${e.score}`).join("<br>");
-}
-
-function loadProgress() {
-  const todayKey = getTodayKey();
-  const bestScore = localStorage.getItem("dailyDiceBestScore-" + todayKey);
-  if (bestScore !== null) {
-    resultDiv.textContent = `Best score today: ${bestScore}`;
-    updateScore(bestScore);
-  } else {
-    resultDiv.textContent = "";
-    updateScore("");
-  }
-}
-
-window.onload = () => {
-  initGame();
-};
+function
