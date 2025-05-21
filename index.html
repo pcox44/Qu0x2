@@ -4,41 +4,48 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Daily Dice Game</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>🎲 Daily Dice Game</h1>
-  <div id="target" class="target"></div>
+  <div class="container">
+    <h1>Daily Dice Game</h1>
+    <div id="rules">
+      <h2>Rules:</h2>
+      <ul>
+        <li>Use each of the five dice exactly once in your expression.</li>
+        <li>You can use +, -, *, /, and parentheses.</li>
+        <li>You cannot combine dice digits (e.g., "4" and "5" cannot be typed as "45").</li>
+        <li>Your goal is to get as close as possible to the target number.</li>
+        <li>Submit as many attempts as you like; lower score is better.</li>
+        <li>A perfect solution has a score of zero (exact match).</li>
+      </ul>
+    </div>
 
-  <div id="dice-container" class="dice-container"></div>
+    <div class="target">
+      Target Number: <span id="target-number"></span>
+    </div>
 
-  <div id="expression" class="expression" contenteditable="false" spellcheck="false"></div>
-  
-  <div id="live-result" class="live-result"></div>
-  <div id="score-display" class="score-display"></div>
+    <div id="dice-container" class="dice-container"></div>
 
-  <div id="buttons" class="buttons">
-    <button onclick="addOp('+')">+</button>
-    <button onclick="addOp('-')">-</button>
-    <button onclick="addOp('*')">*</button>
-    <button onclick="addOp('/')">/</button>
-    <button onclick="addOp('(')">(</button>
-    <button onclick="addOp(')')">)</button>
-    <button onclick="backspace()">⌫</button>
-    <button onclick="clearExpression()">Clear</button>
-    <button onclick="submitExpression()">Submit</button>
+    <input type="text" id="expression" readonly placeholder="Your expression here" />
+
+    <div class="buttons">
+      <button class="btn-op">+</button>
+      <button class="btn-op">-</button>
+      <button class="btn-op">*</button>
+      <button class="btn-op">/</button>
+      <button id="btn-backspace">⌫ Backspace</button>
+      <button id="btn-clear">Clear</button>
+      <button id="btn-submit">Submit</button>
+    </div>
+
+    <div id="live-result">Result: -</div>
+    <div id="score-display">Score: -</div>
+
+    <div id="archive" class="archive"></div>
+    <div id="perfect-count" class="perfect-count"></div>
+    <div id="streak" class="streak">Current Streak: 0</div>
   </div>
-
-  <h2>Results</h2>
-  <table id="results-table">
-    <thead>
-      <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <h2>Archive (last 30 days)</h2>
-  <div id="archive" class="archive"></div>
 
   <script src="script.js"></script>
 </body>
