@@ -57,11 +57,11 @@ function getBlockedOperators(day) {
   const rand = mulberry32(day + 1);
   const coreOps = ["+", "-", "*", "/", "^", "!"];
 
-  // Start by shuffling and blocking first 2 operators randomly
+  // Shuffle and pick initial two blocked operators
   const shuffled = shuffle(coreOps.slice(), rand);
   let blocked = new Set(shuffled.slice(0, 2));
 
-  // Access current dice and target for this day
+  // Get dice and target for the day
   let dice, target;
   if (day < staticPuzzles.length) {
     dice = staticPuzzles[day].dice;
@@ -74,7 +74,7 @@ function getBlockedOperators(day) {
   const onesCount = dice.filter(n => n === 1).length;
   const factorialBlocked = blocked.has("!");
 
-  // 1. Never block both + and - at the same time
+  // 1. Never block both + and -
   if (blocked.has("+") && blocked.has("-")) {
     if (rand() < 0.5) {
       blocked.delete("+");
@@ -84,8 +84,16 @@ function getBlockedOperators(day) {
   }
 
   // 2. If there are two or more 1's, do NOT block factorial
-  if (onesCount >= 2 && blocked.has("!")) {
+  if (onesCount >= 2 && factorialBlocked) {
     blocked.delete("!");
+
+    // Add a different operator instead to keep exactly two blocked
+    // Pick one from coreOps not currently blocked
+    const allowedToBlock = coreOps.filter(op => !blocked.has(op) && op !== "!");
+    if (allowedToBlock.length > 0) {
+      const opToBlock = allowedToBlock[Math.floor(rand() * allowedToBlock.length)];
+      blocked.add(opToBlock);
+    }
   }
 
   // 3. If target > 50 and factorial is blocked, ensure ^ is allowed
@@ -106,6 +114,7 @@ function getBlockedOperators(day) {
 
   return Array.from(blocked);
 }
+
 
 
 
