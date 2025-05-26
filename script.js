@@ -101,6 +101,23 @@ function getBlockedOperators(day) {
     }
   }
 
+  // New Rule: If all dice are <= 3, don’t block both ^ and !
+  const allDiceSmall = dice.every(n => n <= 3);
+  if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
+    if (rand() < 0.5) {
+      blocked.delete("^");
+    } else {
+      blocked.delete("!");
+    }
+
+    // Add another operator to keep count at 2
+    const possibleToBlock = coreOps.filter(op => !blocked.has(op));
+    if (possibleToBlock.length > 0) {
+      const opToBlock = possibleToBlock[Math.floor(rand() * possibleToBlock.length)];
+      blocked.add(opToBlock);
+    }
+  }
+
   // Re-apply + and - rule in case it was broken
   if (blocked.has("+") && blocked.has("-")) {
     if (rand() < 0.5) {
@@ -125,6 +142,7 @@ function getBlockedOperators(day) {
 
   return Array.from(blocked);
 }
+
 
 
 
