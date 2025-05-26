@@ -53,39 +53,60 @@ function shuffle(array, rand) {
   return array;
 }
 
-function isPrime(n) {
-  if (n <= 1) return false;
-  if (n === 2) return true;
-  if (n % 2 === 0) return false;
-  for (let i = 3; i * i <= n; i += 2) {
-    if (n % i === 0) return false;
-  }
-  return true;
-}
-
 function getBlockedOperators(day) {
   const rand = mulberry32(day + 1);
   const coreOps = ["+", "-", "*", "/", "^", "!"];
+
+  // Start by shuffling and blocking first 2 operators randomly
   const shuffled = shuffle(coreOps.slice(), rand);
+  let blocked = new Set(shuffled.slice(0, 2));
 
-  const t = (day < 11) ? staticPuzzles[day].target : Math.floor(rand() * 100) + 1;
+  // Access current dice and target for this day
+  let dice, target;
+  if (day < staticPuzzles.length) {
+    dice = staticPuzzles[day].dice;
+    target = staticPuzzles[day].target;
+  } else {
+    dice = Array.from({ length: 5 }, () => Math.floor(rand() * 6) + 1);
+    target = Math.floor(rand() * 100) + 1;
+  }
 
-  let blocked = shuffled.slice(0, 2);
+  const onesCount = dice.filter(n => n === 1).length;
+  const factorialBlocked = blocked.has("!");
 
-  // Prevent both + and - from being blocked if the target is prime
-  if (isPrime(t) && blocked.includes("+") && blocked.includes("-")) {
-    // Replace the second blocked operator with the next one in the shuffled list that is not + or -
-    for (let i = 2; i < shuffled.length; i++) {
-      const replacement = shuffled[i];
-      if (replacement !== "+" && replacement !== "-") {
-        blocked[1] = replacement;
-        break;
-      }
+  // 1. Never block both + and - at the same time
+  if (blocked.has("+") && blocked.has("-")) {
+    if (rand() < 0.5) {
+      blocked.delete("+");
+    } else {
+      blocked.delete("-");
     }
   }
 
-  return blocked;
+  // 2. If there are two or more 1's, do NOT block factorial
+  if (onesCount >= 2 && blocked.has("!")) {
+    blocked.delete("!");
+  }
+
+  // 3. If target > 50 and factorial is blocked, ensure ^ is allowed
+  if (target > 50 && factorialBlocked && blocked.has("^")) {
+    blocked.delete("^");
+  }
+
+  // 4. If all dice ≤ 3, ensure at least one of *, ^, ! is allowed
+  const allDiceLE3 = dice.every(n => n <= 3);
+  if (allDiceLE3) {
+    const opsToCheck = ["*", "^", "!"];
+    const blockedOps = opsToCheck.filter(op => blocked.has(op));
+    if (blockedOps.length === opsToCheck.length) {
+      const toUnblock = opsToCheck[Math.floor(rand() * opsToCheck.length)];
+      blocked.delete(toUnblock);
+    }
+  }
+
+  return Array.from(blocked);
 }
+
 
 
 
