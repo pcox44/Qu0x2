@@ -449,7 +449,7 @@ document.getElementById("shareBtn").addEventListener("click", () => {
   const expression = expressionBox.innerText;
   const shareableExpr = expressionToShareable(expression);
 
-  const shareText = `Qu0x! ${gameNumber}: ${shareableExpr}`;
+  const shareText = `Qu0x!+ ${gameNumber}: ${shareableExpr}`;
 
   navigator.clipboard.writeText(shareText).then(() => {
     alert("Copied your Qu0x! expression to clipboard!");
