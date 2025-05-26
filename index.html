@@ -2,59 +2,98 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Daily Dice Game</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Qu0x!</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* Added styles for the top bar layout */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .top-bar h1 {
+      margin: 0;
+      flex: 1;
+      text-align: left;
+    }
+
+    #gameNumberDate {
+      flex: 1;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2em;
+      user-select: none;
+    }
+
+    .nav-controls {
+      flex: 1;
+      text-align: right;
+    }
+  </style>
 </head>
 <body>
-  <h1>🎲 Daily Dice Game</h1>
-  <p class="rules">
-    Use each die exactly once to get as close as possible to the target number (1–100). 
-    Use +, −, ×, ÷, and parentheses freely. Score is absolute difference from target. 
-    Try to find perfect solutions (score 0)!
-  </p>
-
-  <div id="navigation">
-    <button onclick="previousDay()">← Previous</button>
-    <span id="game-label"></span>
-    <button onclick="nextDay()">Next →</button>
-  </div>
-
-  <div id="target-container">🎯 Target: <span id="target"></span></div>
-  <div id="dice-container"></div>
-  <div id="expression"></div>
-
-  <div id="buttons">
-    <div class="op-row">
-      <button onclick="addOp('+')">+</button>
-      <button onclick="addOp('-')">−</button>
-      <button onclick="addOp('*')">×</button>
-      <button onclick="addOp('/')">÷</button>
-      <button onclick="addOp('(')">(</button>
-      <button onclick="addOp(')')">)</button>
-    </div>
-    <div class="ctrl-row">
-      <button onclick="backspace()">⌫</button>
-      <button onclick="clearExpression()">Clear</button>
-      <button onclick="submitExpression()">Submit</button>
+  <div class="top-bar">
+    <h1>Qu0x!</h1>
+  <div id="gameNumberDate"><!-- JS will populate this --></div>  
+    <div class="nav-controls">
+      <button id="prevDay">◀</button>
+      <select id="gameDropdown"></select>
+      <button id="nextDay">▶</button>
     </div>
   </div>
 
-  <div id="live-result"></div>
-  <div id="score-display"></div>
-  <div id="streak-display"></div>
-  <div id="perfect-count-display"></div>
+<div class="instructions">
+  <ul>
+    <li><strong>Use each of the 5 dice values</strong> exactly once to build an expression to get as close as possible to the <strong>target</strong>.</li>
+    <li><strong>Allowed operations:</strong> +, -, <span class="operator">×</span>, <span class="operator">÷</span>, ^ (exponent), ! (factorial)</li>
+    <li><strong>Score = |Target − Result|.</strong> A score of 0 earns a <span class="qu0x">Qu0x!</span></li>
+  </ul>
+</div>
 
-  <h2>Attempts</h2>
-  <table id="results-table">
-    <thead>
-      <tr><th>#</th><th>Expression</th><th>Result</th><th>Score</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div id="gameHeader">
+    <!-- Removed gameNumberDate from here -->
+    <div class="target-box" id="targetBox">Target: ???</div>
+  </div>
 
-  <h2>Game Archive</h2>
-  <div id="archive"></div>
+  <div id="qu0xAnimation" class="hidden">🎉🎉 Qu0x! 🎉🎉</div>
+
+  <button id="shareBtn" class="hidden">Share Your Qu0x!</button>
+  
+  <div class="dice-container" id="diceContainer"></div>
+
+  <div class="expression-section">
+    <div id="expressionBox"></div>
+    <div id="equalsSign">=</div>
+    <div id="evaluationBox">?</div>
+  </div>
+
+  <!-- Add this below your current expression and evaluation boxes -->
+  <div id="deluxeContainer" class="hidden">
+    <div id="deluxeExpressionBox" contenteditable="true" spellcheck="false"></div>
+    <div id="deluxeEvaluationBox">?</div>
+    <button id="deluxeSubmitBtn">Submit Deluxe Qu0x!</button>
+  </div>
+  
+  <div class="buttons" id="buttonGrid"></div>
+  
+
+  <div id="submitArea">
+    <button id="submitBtn" class="submit">Submit</button>
+  </div>
+
+  <div class="scoreboard">
+    <p><strong>Daily Best Score:</strong> <span id="dailyBestScore">N/A</span></p>
+    <p><strong>Qu0x! Completion:</strong> <span id="completionRatio">0/0</span></p>
+    <p><strong>Qu0x! Master Score:</strong> <span id="masterScore">N/A</span></p>
+  </div>
+
+ 
+ 
 
   <script src="script.js"></script>
 </body>
