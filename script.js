@@ -1,358 +1,430 @@
-// Starting date is May 16, 2025 (UTC)
-const startDate = new Date("2025-05-16T00:00:00Z");
+const expressionBox = document.getElementById("expressionBox");
+const evaluationBox = document.getElementById("evaluationBox");
+const buttonGrid = document.getElementById("buttonGrid");
+const diceContainer = document.getElementById("diceContainer");
+const targetBox = document.getElementById("targetBox");
+const submitBtn = document.getElementById("submitBtn");
+const dropdown = document.getElementById("gameDropdown");
+const dailyBestScoreBox = document.getElementById("dailyBestScore");
+const completionRatioBox = document.getElementById("completionRatio");
+const masterScoreBox = document.getElementById("masterScore");
+const gameNumberDate = document.getElementById("gameNumberDate");
+const qu0xAnimation = document.getElementById("qu0xAnimation");
+
+
 let currentDate = new Date();
-
-// Force currentDate time to midnight UTC for consistency
-function toMidnightUTC(date) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-}
-currentDate = toMidnightUTC(currentDate);
-
-// HTML elements
-const targetEl = document.getElementById("target");
-const diceContainer = document.getElementById("dice-container");
-const expressionEl = document.getElementById("expression");
-const resultEl = document.getElementById("live-result");
-const scoreEl = document.getElementById("score-display");
-const streakEl = document.getElementById("streak-display");
-const perfectCountEl = document.getElementById("perfect-count-display");
-const archiveEl = document.getElementById("archive");
-const resultsTableBody = document.querySelector("#results-table tbody");
-const gameLabel = document.getElementById("game-label");
-
-let expression = "";
+let currentDay = getDayIndex(currentDate);
+let maxDay = getDayIndex(new Date());
 let usedDice = [];
-let dice = [];
+let diceValues = [];
+let target = null;
+let lockedDays = JSON.parse(localStorage.getItem("lockedDays") || "{}");
+let bestScores = JSON.parse(localStorage.getItem("bestScores") || "{}");
 
-// Simple deterministic RNG based on date string
-function seedRNG(dateStr) {
-  let hash = 0;
-  for (let i = 0; i < dateStr.length; i++) {
-    hash = (hash << 5) - hash + dateStr.charCodeAt(i);
-    hash |= 0;
+const colorBoxes = {
+  "1": "🟥", // red box for 1
+  "2": "⬜", // white box for 2
+  "3": "🟦", // blue box for 3
+  "4": "🟨", // yellow box for 4
+  "5": "🟩", // green box for 5
+  "6": "⬛", // black box for 6
+};
+
+function expressionToShareable(expr) {
+  return expr.replace(/\d/g, d => colorBoxes[d] || d);
+}
+
+function getDayIndex(date) {
+  const start = new Date("2025-05-15T00:00:00");
+  const diff = Math.floor((date - start) / (1000 * 60 * 60 * 24));
+  return Math.max(0, diff);
+}
+
+
+// Example PRNG and hash
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
   }
-  return () => {
-    hash = Math.imul(hash ^ (hash >>> 16), 0x45d9f3b);
-    hash = Math.imul(hash ^ (hash >>> 16), 0x45d9f3b);
-    hash ^= hash >>> 16;
-    return (hash >>> 0) / 4294967296;
+}
+
+function hashString(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+function getDateFromDayIndex(index) {
+  const start = new Date("2025-05-15T00:00:00");
+  const date = new Date(start.getTime() + index * 86400000);
+  return date.toISOString().slice(0, 10);
+}
+
+// Step 1: Define the static puzzles for the first 10 days
+const staticPuzzles = [
+  { dice: [3, 2, 5, 1, 1], target: 82 },
+  { dice: [6, 3, 2, 4, 3], target: 46 },
+  { dice: [2, 6, 2, 5, 4], target: 93 },
+  { dice: [1, 6, 6, 3, 3], target: 44 },
+  { dice: [1, 5, 4, 3, 2], target: 76 },
+  { dice: [4, 2, 6, 3, 5], target: 4 },
+  { dice: [1, 6, 4, 4, 3], target: 4 },
+  { dice: [6,3, 1, 6, 1], target: 19 },
+  { dice: [3, 1, 1, 3, 5], target: 73 },
+  { dice: [3, 1, 3, 2, 6], target: 31 },
+  { dice: [4, 5, 5, 3, 2], target: 52 },
+];
+
+// Optional: use mulberry32 PRNG for dynamic puzzles from day 10 onward
+function mulberry32(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
-// Get game number starting at May 16 as #1
-function getGameId(date) {
-  const diff = Math.floor((toMidnightUTC(date) - startDate) / (1000 * 60 * 60 * 24));
-  return diff + 1;
+// Step 2: Modify generatePuzzle to use static for first 10 days, dynamic for others
+function generatePuzzle(day) {
+  if (day < 11) {
+    diceValues = staticPuzzles[day].dice.slice();  // clone array
+    target = staticPuzzles[day].target;
+  } else {
+    // For days 11 onward, generate procedurally using mulberry32 seeded with day+1
+    const rand = mulberry32(day + 1);
+    diceValues = Array.from({ length: 5 }, () => Math.floor(rand() * 6) + 1);
+    target = Math.floor(rand() * 100) + 1;
+  }
 }
 
-// Get ISO date string (yyyy-mm-dd)
-function getDateKey(date) {
-  const d = toMidnightUTC(date);
-  return d.toISOString().split("T")[0];
-}
-
-// Generate dice and target for a given date deterministically
-function getGameData(date) {
-  const dateKey = getDateKey(date);
-  const rng = seedRNG(dateKey);
-  dice = Array.from({ length: 5 }, () => Math.floor(rng() * 6) + 1);
-  const target = Math.floor(rng() * 100) + 1;
-  return { dice, target };
-}
-
-// Render dice buttons
 function renderDice() {
   diceContainer.innerHTML = "";
-  dice.forEach((val, i) => {
-    const btn = document.createElement("div");
-    btn.className = `die die-${val}` + (usedDice.includes(i) ? " used" : "");
-    btn.textContent = val;
-    btn.onclick = () => {
-      if (!usedDice.includes(i)) {
-        expression += val;
-        usedDice.push(i);
-        updateDisplay();
-      }
-    };
-    diceContainer.appendChild(btn);
-  });
-}
-
-// Add operator or parentheses
-function addOp(op) {
-  expression += op;
-  updateDisplay();
-}
-
-// Remove last character from expression
-function backspace() {
-  if (expression.length === 0) return;
-  const lastChar = expression.slice(-1);
-  expression = expression.slice(0, -1);
-  // If lastChar was a die number, free it up
-  if (/[1-6]/.test(lastChar)) {
-    // Find which dice index with that value was last used
-    for (let i = usedDice.length - 1; i >= 0; i--) {
-      if (dice[usedDice[i]] == lastChar) {
-        usedDice.splice(i, 1);
-        break;
-      }
-    }
-  }
-  updateDisplay();
-}
-
-// Clear entire expression and free all dice
-function clearExpression() {
-  expression = "";
   usedDice = [];
-  updateDisplay();
+  diceValues.forEach((val, idx) => {
+    const die = document.createElement("div");
+    die.className = "die";
+    die.dataset.index = idx;
+    die.dataset.value = val;
+    die.innerText = val;
+    styleDie(die, val);
+    die.addEventListener("click", () => {
+      if (!usedDice.includes(idx) && !isLocked(currentDay)) {
+        usedDice.push(idx);
+        die.classList.add("faded");
+        addToExpression(val.toString());
+      }
+    });
+    diceContainer.appendChild(die);
+  });
 }
 
-// Evaluate expression safely
-function evaluate(expr) {
-  // Disallow empty expression or starting/ending with operators improperly
-  if (!expr) return null;
-
-  // Check dice usage validity:
-  // We require each dice value used exactly once, and no concatenation (no two digits adjacent)
-  // So between any two digits must be an operator or parenthesis.
-  // Also check all dice used once.
-
-  // Extract digits used in expression in order:
-  const digitsUsed = expr.match(/\d/g) || [];
-
-  // Must use exactly all dice once
-  const sortedDice = [...dice].sort().join("");
-  const sortedDigitsUsed = [...digitsUsed].sort().join("");
-  if (sortedDice !== sortedDigitsUsed) {
-    return null;
-  }
-
-  // Check for invalid concatenation: no two digits adjacent without operator or parentheses
-  // We'll check expr for any instance of two digits adjacent
-  if (/\d\d/.test(expr)) {
-    return null;
-  }
-
-  // Replace × and ÷ with * and / for eval
-  let safeExpr = expr.replace(/×/g, "*").replace(/÷/g, "/");
-
-  try {
-    // eslint-disable-next-line no-eval
-    let val = eval(safeExpr);
-    if (typeof val !== "number" || !isFinite(val)) return null;
-    return val;
-  } catch {
-    return null;
-  }
+function styleDie(die, val) {
+  const styles = {
+    1: { bg: "red", fg: "white" },
+    2: { bg: "white", fg: "black" },
+    3: { bg: "blue", fg: "white" },
+    4: { bg: "yellow", fg: "black" },
+    5: { bg: "green", fg: "white" },
+    6: { bg: "black", fg: "yellow" }
+  };
+  const style = styles[val];
+  die.style.backgroundColor = style.bg;
+  die.style.color = style.fg;
 }
 
-// Update expression display, live result, and score
-function updateDisplay() {
-  expressionEl.textContent = expression;
-  const val = evaluate(expression);
-  if (val === null) {
-    resultEl.textContent = "Invalid expression or dice usage";
-    scoreEl.textContent = "";
+function addToExpression(char) {
+  const expr = expressionBox.innerText;
+  const lastChar = expr.slice(-1);
+
+  // Define what counts as a number character (digits)
+  const isDigit = c => /\d/.test(c);
+
+  // If char is a digit (from dice):
+  if (isDigit(char)) {
+    // If last char is also a digit, add a space before adding new digit to prevent concatenation
+    if (isDigit(lastChar)) {
+      expressionBox.innerText += ' ' + char;
+    } else {
+      expressionBox.innerText += char;
+    }
   } else {
-    // Round result to integer if close
-    const rounded = Math.round(val);
-    resultEl.textContent = `Result: ${rounded}`;
-    const score = Math.abs(rounded - currentTarget);
-    scoreEl.textContent = `Score: ${score}`;
+    // For operators and parentheses, append directly
+    expressionBox.innerText += char;
   }
+
+  evaluateExpression();
 }
 
-// Storage keys
-function getStorageKey(date) {
-  return `dailyDiceGame_${getDateKey(date)}`;
+function doubleFactorial(n) {
+  if (n < 0 || !Number.isInteger(n)) throw "Invalid double factorial";
+  if (n === 0 || n === 1) return 1;
+  let product = 1;
+  for (let i = n; i > 1; i -= 2) {
+    product *= i;
+  }
+  return product;
 }
 
-function getStreakKey() {
-  return "dailyDiceGame_streak";
+function tripleFactorial(n) {
+  if (n < 0 || !Number.isInteger(n)) throw "Invalid triple factorial";
+  if (n === 0 || n === 1) return 1;
+  let product = 1;
+  for (let i = n; i > 1; i -= 3) {
+    product *= i;
+  }
+  return product;
 }
 
-// Load and save results for current day
-function loadResults(date) {
-  const key = getStorageKey(date);
-  const raw = localStorage.getItem(key);
-  return raw ? JSON.parse(raw) : [];
-}
-function saveResults(date, results) {
-  const key = getStorageKey(date);
-  localStorage.setItem(key, JSON.stringify(results));
+function factorial(n) {
+  if (n < 0 || !Number.isInteger(n)) throw "Invalid factorial";
+  return n <= 1 ? 1 : n * factorial(n - 1);
 }
 
-// Load streak count
-function loadStreak() {
-  const raw = localStorage.getItem(getStreakKey());
-  return raw ? parseInt(raw) : 0;
-}
-function saveStreak(val) {
-  localStorage.setItem(getStreakKey(), val);
-}
-
-// Render attempts table
-function renderResultsTable(results) {
-  resultsTableBody.innerHTML = "";
-  results.forEach((r, i) => {
-    const tr = document.createElement("tr");
-    const exprTd = document.createElement("td");
-    exprTd.textContent = r.expr;
-    const resultTd = document.createElement("td");
-    resultTd.textContent = r.result;
-    const scoreTd = document.createElement("td");
-    scoreTd.textContent = r.score;
-    const indexTd = document.createElement("td");
-    indexTd.textContent = i + 1;
-    tr.appendChild(indexTd);
-    tr.appendChild(exprTd);
-    tr.appendChild(resultTd);
-    tr.appendChild(scoreTd);
-    resultsTableBody.appendChild(tr);
-  });
-}
-
-// Render archive
-function renderArchive() {
-  archiveEl.innerHTML = "";
-  // Load all keys that start with dailyDiceGame_
-  const keys = Object.keys(localStorage).filter(k => k.startsWith("dailyDiceGame_") && !k.includes("streak"));
-  // Sort keys descending (newest first)
-  keys.sort((a,b) => (a < b ? 1 : -1));
-
-  keys.forEach(k => {
-    const dateStr = k.slice("dailyDiceGame_".length);
-    const attempts = JSON.parse(localStorage.getItem(k));
-    if (!attempts || attempts.length === 0) return;
-    // Count perfect solutions for this day
-    const perfectCount = attempts.filter(a => a.score === 0).length;
-    // Compute game number
-    const dateObj = new Date(dateStr + "T00:00:00Z");
-    const gameNum = getGameId(dateObj);
-    const div = document.createElement("div");
-    div.className = "archive-entry" + (perfectCount > 0 ? " perfect" : "");
-    div.innerHTML = `<strong>Game #${gameNum} - ${dateStr}</strong> — Perfect Solutions: ${perfectCount}<br>` +
-      attempts.map(a => `${a.expr} = ${a.result} (Score: ${a.score})`).join("<br>");
-    archiveEl.appendChild(div);
-  });
-}
-
-// Submit expression
-function submitExpression() {
-  const val = evaluate(expression);
-  if (val === null) {
-    alert("Invalid expression or dice usage.");
+function evaluateExpression() {
+  const expr = expressionBox.innerText.trim();
+  if (expr.length === 0) {
+    evaluationBox.innerText = "?";
     return;
   }
-  const rounded = Math.round(val);
-  const score = Math.abs(rounded - currentTarget);
-  const results = loadResults(currentDate);
+  try {
+    let replaced = expr;
 
-  results.push({ expr: expression, result: rounded, score });
-  saveResults(currentDate, results);
+    // Triple factorial e.g. 5!!! or (2+1)!!!
+    replaced = replaced.replace(/(\([^)]+\)|\d+)!!!/g, (_, val) => {
+      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
+      if (!Number.isInteger(n) || n < 0) throw "Invalid triple factorial";
+      return tripleFactorial(n);
+    });
 
-  // Update perfect solutions count display
-  updatePerfectCount();
+    // Double factorial e.g. 4!! or (3!!)!!
+    replaced = replaced.replace(/(\([^)]+\)|\d+)!!/g, (_, val) => {
+      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
+      if (!Number.isInteger(n) || n < 0) throw "Invalid double factorial";
+      return doubleFactorial(n);
+    });
 
-  renderResultsTable(results);
-  renderArchive();
+    // Single factorial e.g. 3! or (4)!
+    replaced = replaced.replace(/(\([^)]+\)|\d+)!/g, (_, val) => {
+      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
+      if (!Number.isInteger(n) || n < 0) throw "Invalid factorial";
+      return factorial(n);
+    });
 
-  // Update streak if today is played and score=0 and streak not updated yet
-  if (isToday(currentDate) && score === 0) {
-    updateStreak();
+    // Replace ^ with **
+    replaced = replaced.replace(/\^/g, "**");
+
+    let result = eval(replaced);
+
+    evaluationBox.innerText = result;
+  } catch {
+    evaluationBox.innerText = "?";
   }
-
-  // Clear for next attempt
-  clearExpression();
 }
 
-// Update perfect solutions count display
-function updatePerfectCount() {
-  const results = loadResults(currentDate);
-  const perfectCount = results.filter(r => r.score === 0).length;
-  perfectCountEl.textContent = `Perfect Solutions Today: ${perfectCount}`;
-}
+function buildButtons() {
+  const ops = ["+", "-", "*", "/", "^", "!", "(", ")", "Back", "Clear"];
+  buttonGrid.innerHTML = "";
 
-// Update streak display
-function updateStreak() {
-  let streak = loadStreak();
-  const lastPlayedDateStr = localStorage.getItem("dailyDiceGame_lastPlayed");
-  const todayStr = getDateKey(currentDate);
-  if (lastPlayedDateStr !== todayStr) {
-    // Check if yesterday was played with perfect score
-    if (lastPlayedDateStr) {
-      const yesterday = new Date(lastPlayedDateStr + "T00:00:00Z");
-      yesterday.setUTCDate(yesterday.getUTCDate() + 1);
-      if (toMidnightUTC(currentDate).getTime() === toMidnightUTC(yesterday).getTime()) {
-        streak++;
+
+  ops.forEach(op => {
+    const btn = document.createElement("button");
+    btn.innerText = op;
+    btn.onclick = () => {
+      if (isLocked(currentDay)) return;
+      if (op === "Back") {
+        let expr = expressionBox.innerText;
+        if (expr.length === 0) return;
+        const removed = expr[expr.length - 1];
+        expressionBox.innerText = expr.slice(0, -1);
+        const idx = usedDice.findLast(i => diceValues[i].toString() === removed);
+        if (idx !== undefined) {
+          usedDice = usedDice.filter(i => i !== idx);
+          document.querySelector(`.die[data-index="${idx}"]`).classList.remove("faded");
+        }
+      } else if (op === "Clear") {
+        expressionBox.innerText = "";
+        usedDice = [];
+        renderDice();
       } else {
-        streak = 1;
+        addToExpression(op);
       }
-    } else {
-      streak = 1;
-    }
-    saveStreak(streak);
-    localStorage.setItem("dailyDiceGame_lastPlayed", todayStr);
+      evaluateExpression();
+    };
+    buttonGrid.appendChild(btn);
+  });
+}
+
+function isLocked(day) {
+  return lockedDays[day]?.score === 0;
+}
+
+function submit() {
+  if (isLocked(currentDay)) return;
+
+  const result = evaluationBox.innerText;
+  if (result === "?") {
+    alert("Invalid Submission");
+    return;
   }
-  streakEl.textContent = `Current Streak (days with perfect solution): ${streak}`;
+  if (!Number.isInteger(Number(result))) {
+  alert("Submission must be an integer result.");
+  return;
+  }
+  if (usedDice.length !== 5) {
+    alert("You must use all 5 dice.");
+    return;
+  }
+
+  const score = Math.abs(Number(result) - target);
+  if (!(currentDay in bestScores) || score < bestScores[currentDay]) {
+    bestScores[currentDay] = score;
+    localStorage.setItem("bestScores", JSON.stringify(bestScores));
+  }
+
+ if (score === 0) {
+  lockedDays[currentDay] = { score, expression: expressionBox.innerText };
+  localStorage.setItem("lockedDays", JSON.stringify(lockedDays));
+  animateQu0x();
+
+  // ✅ Show the Share button
+  document.getElementById("shareBtn").classList.remove("hidden");
 }
 
-// Check if given date is today UTC
-function isToday(date) {
-  return getDateKey(date) === getDateKey(new Date());
+  renderGame(currentDay);
 }
 
-// Render buttons and everything for currentDate
-let currentTarget = 0;
+function animateQu0x() {
+  qu0xAnimation.classList.remove("hidden");
+  setTimeout(() => {
+    qu0xAnimation.classList.add("hidden");
+  }, 3000);
+}
 
-function renderGame() {
-  const { dice: newDice, target } = getGameData(currentDate);
-  dice = newDice;
-  currentTarget = target;
+function renderGame(day) {
+  currentDay = day;
 
-  // Reset expression and used dice
-  expression = "";
-  usedDice = [];
-
-  targetEl.textContent = target;
+  generatePuzzle(day);
   renderDice();
-  updateDisplay();
 
-  // Render results for current date
-  const results = loadResults(currentDate);
-  renderResultsTable(results);
-  updatePerfectCount();
-
-  // Update game label with game number and date
-  const gameNum = getGameId(currentDate);
-  gameLabel.textContent = `Game #${gameNum} — ${getDateKey(currentDate)}`;
-
-  // Update streak display (only for today)
-  if (isToday(currentDate)) {
-    updateStreak();
+  if (lockedDays[day] && lockedDays[day].expression) {
+    expressionBox.innerText = lockedDays[day].expression;
+    evaluateExpression();
   } else {
-    streakEl.textContent = "";
+    expressionBox.innerText = "";
+    evaluationBox.innerText = "?";
+  }
+
+  targetBox.innerText = `Target: ${target}`;
+  gameNumberDate.innerText = `Game #${day + 1} (${getDateFromDayIndex(day)})`;
+
+  if (bestScores[day] !== undefined) {
+    dailyBestScoreBox.innerText = `${bestScores[day]}`;
+  } else {
+    dailyBestScoreBox.innerText = "N/A";
+  }
+
+  const completedDays = Object.values(bestScores).filter(score => score === 0).length;
+  completionRatioBox.innerText = `${completedDays}/${maxDay + 1}`;
+
+  const totalScore = Object.values(bestScores).reduce((a, b) => a + b, 0);
+  const totalGames = maxDay + 1;
+
+  if (Object.keys(bestScores).length === totalGames) {
+    masterScoreBox.innerText = `${totalScore}`;
+  } else {
+    masterScoreBox.innerText = "N/A";
+  }
+
+
+  const locked = isLocked(day);
+
+  expressionBox.style.pointerEvents = locked ? "none" : "auto";
+  submitBtn.disabled = locked;
+
+  // Disable or enable all operator buttons
+  buttonGrid.querySelectorAll("button").forEach(btn => {
+    btn.disabled = locked;
+    if (locked) {
+      btn.classList.add("disabled");
+    } else {
+      btn.classList.remove("disabled");
+    }
+  });
+
+  // Hide or show Share button
+  const shareBtn = document.getElementById("shareBtn");
+  if (locked && lockedDays[day]?.expression) {
+    shareBtn.classList.remove("hidden");
+  } else {
+    shareBtn.classList.add("hidden");
   }
 }
 
-// Navigation
-function previousDay() {
-  const prevDate = new Date(currentDate);
-  prevDate.setUTCDate(prevDate.getUTCDate() - 1);
-  if (prevDate < startDate) return; // No earlier than start date
-  currentDate = prevDate;
-  renderGame();
+document.getElementById("prevDay").onclick = () => {
+  if (currentDay > 0) {
+    currentDay--;
+    renderGame(currentDay);
+    populateDropdown();
+  }
+};
+
+document.getElementById("nextDay").onclick = () => {
+  if (currentDay < maxDay) {
+    currentDay++;
+    renderGame(currentDay);
+    populateDropdown();
+  }
+};
+
+function populateDropdown() {
+  dropdown.innerHTML = "";
+  for (let i = 0; i <= maxDay; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    
+    // Option text, you can customize with emojis or formatting
+    option.text = `Game #${i + 1}`;
+    
+    // Mark locked games with a star emoji in option text
+    if (lockedDays[i] && lockedDays[i].score === 0) {
+      option.text = "⭐ " + option.text;
+    }
+
+    dropdown.appendChild(option);
+  }
+  // Set the dropdown value to the currentDay so UI matches the current game
+  dropdown.value = currentDay;
 }
 
-function nextDay() {
-  const nextDate = new Date(currentDate);
-  nextDate.setUTCDate(nextDate.getUTCDate() + 1);
-  if (nextDate > toMidnightUTC(new Date())) return; // no future dates
-  currentDate = nextDate;
-  renderGame();
-}
+// Add event listener to handle selection change
+dropdown.addEventListener("change", (e) => {
+  const selectedDay = Number(e.target.value);
+  if (selectedDay >= 0 && selectedDay <= maxDay) {
+    renderGame(selectedDay);
+  }
+});
 
-renderGame();
-renderArchive();
+submitBtn.addEventListener("click", submit);
+
+// Initialize buttons, dropdown, and render current game on page load
+buildButtons();
+populateDropdown();
+renderGame(currentDay);
+
+document.getElementById("shareBtn").addEventListener("click", () => {
+  const gameNumber = currentDay + 1;  // game number = day index + 1
+  const expression = expressionBox.innerText;
+  const shareableExpr = expressionToShareable(expression);
+
+  const shareText = `Qu0x! ${gameNumber}: ${shareableExpr}`;
+
+  navigator.clipboard.writeText(shareText).then(() => {
+    alert("Copied your Qu0x! expression to clipboard!");
+  });
+});
