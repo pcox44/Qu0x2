@@ -53,12 +53,35 @@ function shuffle(array, rand) {
   return array;
 }
 
+function isPrime(n) {
+  if (n <= 1) return false;
+  if (n === 2) return true;
+  if (n % 2 === 0) return false;
+  for (let i = 3; i * i <= n; i += 2) {
+    if (n % i === 0) return false;
+  }
+  return true;
+}
+
 function getBlockedOperators(day) {
   const rand = mulberry32(day + 1);
   const coreOps = ["+", "-", "*", "/", "^", "!"];
-  const shuffled = shuffle(coreOps.slice(), rand);
-  return shuffled.slice(0, 2);
+  let shuffled = shuffle(coreOps.slice(), rand);
+
+  // Use the pre-generated target if available
+  const t = (day < 11) ? staticPuzzles[day].target : Math.floor(rand() * 100) + 1;
+
+  // If the target is prime, ensure + and - are NOT both blocked
+  if (isPrime(t)) {
+    while (shuffled.includes("+") && shuffled.includes("-")) {
+      shuffled = shuffle(coreOps.slice(), rand);
+    }
+  }
+
+  return shuffled.slice(0, 2); // still only block 2 operators
 }
+
+
 
 
 
