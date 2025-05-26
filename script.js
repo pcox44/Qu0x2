@@ -309,12 +309,12 @@ function submit() {
   const score = Math.abs(Number(result) - target);
   if (!(currentDay in bestScores) || score < bestScores[currentDay]) {
     bestScores[currentDay] = score;
-    localStorage.setItem("QbestScores", JSON.stringify(bestScores));
+    localStorage.setItem("QBestScores", JSON.stringify(bestScores));
   }
 
  if (score === 0) {
   lockedDays[currentDay] = { score, expression: expressionBox.innerText };
-  localStorage.setItem("QlockedDays", JSON.stringify(lockedDays));
+  localStorage.setItem("QLockedDays", JSON.stringify(lockedDays));
   animateQu0x();
 
   // ✅ Show the Share button
