@@ -1,130 +1,230 @@
 body {
-  font-family: sans-serif;
-  padding: 20px;
-  background: #f9f9f9;
-  color: #333;
-  max-width: 800px;
-  margin: auto;
-}
-
-h1 {
+  font-family: Arial, sans-serif;
   text-align: center;
+  margin: 0;
+  background: #f7f7f7;
 }
 
-.rules {
-  background: #eef;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-#target-container {
-  font-size: 24px;
-  font-weight: bold;
-  margin: 10px 0;
-  text-align: center;
-}
-
-#dice-container {
-  display: flex;
-  justify-content: center;
-  margin: 20px 0;
-  gap: 10px;
-}
-
-.die {
-  width: 60px;
-  height: 60px;
-  font-size: 24px;
-  font-weight: bold;
-  text-align: center;
-  line-height: 60px;
-  border-radius: 10px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.die.used {
-  opacity: 0.5;
-}
-
-.die-1 { background: red; color: white; }
-.die-2 { background: white; color: black; border: 2px solid black; }
-.die-3 { background: blue; color: white; }
-.die-4 { background: yellow; color: black; }
-.die-5 { background: green; color: white; }
-.die-6 { background: black; color: yellow; }
-
-#expression {
-  font-size: 20px;
-  min-height: 30px;
-  margin: 10px;
-  text-align: center;
-  user-select: text;
-}
-
-#buttons {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.op-row, .ctrl-row {
-  margin: 5px;
-}
-
-button {
-  font-size: 20px;
-  padding: 10px 15px;
-  margin: 2px;
-  border-radius: 5px;
-  cursor: pointer;
-  user-select: none;
-}
-
-#live-result, #score-display, #streak-display, #perfect-count-display {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-#results-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-#results-table th, #results-table td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: center;
-}
-
-#archive {
-  margin-top: 20px;
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  padding: 5px;
-  background: #fff;
-}
-
-.archive-entry {
-  padding: 6px;
-  margin: 5px 0;
-  border: 1px solid #aaa;
-  border-radius: 5px;
-}
-
-.archive-entry.perfect {
-  background: #d4edda;
-  border-color: #28a745;
-}
-
-#navigation {
+.top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  background: #333;
+  color: white;
+  padding: 0.5em 1em;
+}
+
+.nav-controls select,
+.nav-controls button {
+  font-size: 1rem;
+  margin-left: 0.25em;
+}
+
+.instructions {
+  background: #fff8e1;
+  border: 2px solid #ffd54f;
+  padding: 0.05em 1em;      /* less vertical padding */
+  max-width: 480px;
+  margin: 0.08em auto;      /* slightly less space above/below the box */
+  border-radius: 10px;
+  font-size: 1.1em;
+  color: #333;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+}
+
+
+.instructions ul {
+  list-style-type: none; /* remove default bullets */
+  padding-left: 0;
+}
+
+.instructions li {
+  position: relative;
+  padding-left: 1.4em;
+  margin-bottom: 0.75em;
+}
+
+.instructions code {
+  background: #eee;
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.instructions .qu0x {
+  color: #d500f9; /* bright purple */
+  font-weight: 900;
+  font-style: italic;
+}
+
+.target-box {
+  background-color: pink;
+  color: black;
+  font-weight: bold;
+  padding: 0.3em 0.8em; /* increased padding */
+  font-size: 2.5em;  /* bigger text */
+  display: inline-block;
+  margin: 0.2em auto;
+  border-radius: 5px;
+  border: 5px solid black;
+}
+
+.dice-container {
+  display: flex;
+  justify-content: center;
+  margin: 1em 0;
+}
+
+.die {
+  width: 70px;
+  height: 70px;
+  font-size: 2.5em;
+  font-weight: bold;
+  border: 4.2px solid black;
+  border-radius: 8px;
+  margin: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.die.faded {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.expression-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.7em;
+  font-size: 1.5em;
+}
+
+#expressionBox {
+  padding: 0.4em 1.2em;  /* wider input */
+  background: white;
+  border: 2px solid #000;
+  min-width: 240px;      /* slightly wider */
+  min-height: 1.2em;     /* match height */
+}
+
+#evaluationBox {
+  padding: 0.4em 0.5em;
+  background: white;
+  border: 2px solid #000;
+  min-width: 80px;      /* narrower */
+  min-height: 1.2em;     /* match height */
+}
+
+#equalsSign {
+  padding: 0 0.5em;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Style deluxe expression and evaluation boxes same as normal */
+#deluxeExpressionBox, #deluxeEvaluationBox {
+  border: 1px solid black;
+  padding: 6px;
+  font-size: 1.2em;
+  min-height: 30px;
+  margin: 5px 0;
+}
+
+/* Style the deluxe submit button */
+#deluxeSubmitBtn {
+  margin-top: 5px;
+  padding: 8px 12px;
+  font-weight: bold;
+  background-color: purple;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#deluxeSubmitBtn:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+#buttonGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5em;
+  margin: 1em auto;
+  max-width: 500px;
+}
+
+#buttonGrid button {
+  padding: 0.6em;
+  font-size: 1.2em;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#submitArea {
+  margin: 1em;
+}
+
+.submit {
+  font-size: 1.3em;
+  padding: 0.5em 1em;
+  background-color: green;
+  color: white;
+  border: 2px solid black;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.scoreboard p {
+  margin: 0.5em;
+}
+
+#qu0xAnimation {
+  font-size: 4.5em;
+  color: #ff00ff;
+  animation: pop 3s ease-in-out;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes pop {
+  0% { transform: scale(0); opacity: 0; }
+  25% { transform: scale(1.2); opacity: 1; }
+  50% { transform: scale(1); }
+  100% { opacity: 0; }
+}
+
+#shareBtn {
+  font-size: 1.1em;
+  padding: 0.4em 1em;
+  background-color: #ff6600;  /* bright orange */
+  color: white;
+  border: 2px solid black;  /* darker orange border */
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 1em;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+#shareBtn:hover {
+  background-color: #cc5200;  /* darker orange on hover */
+  border-color: #993d00;
+}
+
+@media (max-width: 600px) {
+  #expressionBox, #evaluationBox {
+    margin-left: 10px;
+    margin-right: 10px;
+    box-sizing: border-box; /* Make sure padding and border don’t cause overflow */
+  }
 }
