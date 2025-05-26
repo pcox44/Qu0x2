@@ -53,12 +53,40 @@ function shuffle(array, rand) {
   return array;
 }
 
+function isPrime(n) {
+  if (n <= 1) return false;
+  if (n === 2) return true;
+  if (n % 2 === 0) return false;
+  for (let i = 3; i * i <= n; i += 2) {
+    if (n % i === 0) return false;
+  }
+  return true;
+}
+
 function getBlockedOperators(day) {
   const rand = mulberry32(day + 1);
   const coreOps = ["+", "-", "*", "/", "^", "!"];
   const shuffled = shuffle(coreOps.slice(), rand);
-  return shuffled.slice(0, 2);
+
+  const t = (day < 11) ? staticPuzzles[day].target : Math.floor(rand() * 100) + 1;
+
+  let blocked = shuffled.slice(0, 2);
+
+  // Prevent both + and - from being blocked if the target is prime
+  if (isPrime(t) && blocked.includes("+") && blocked.includes("-")) {
+    // Replace the second blocked operator with the next one in the shuffled list that is not + or -
+    for (let i = 2; i < shuffled.length; i++) {
+      const replacement = shuffled[i];
+      if (replacement !== "+" && replacement !== "-") {
+        blocked[1] = replacement;
+        break;
+      }
+    }
+  }
+
+  return blocked;
 }
+
 
 
 
