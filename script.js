@@ -41,14 +41,24 @@ function getDayIndex(date) {
 }
 
 
+function shuffle(array, rand) {
+  let m = array.length, t, i;
+  while (m) {
+    i = Math.floor(rand() * m--);
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+  }
+  return array;
+}
+
 function getBlockedOperators(day) {
-  const rand = mulberry32(day + 1); // consistent seed per day
+  const rand = mulberry32(day + 1);
   const coreOps = ["+", "-", "*", "/", "^", "!"];
-  
-  // Shuffle and pick first 2
-  const shuffled = coreOps.slice().sort(() => rand() - 0.5);
+  const shuffled = shuffle(coreOps.slice(), rand);
   return shuffled.slice(0, 2);
 }
+
 
 
 // Example PRNG and hash
