@@ -57,10 +57,6 @@ function getBlockedOperators(day) {
   const rand = mulberry32(day + 1);
   const coreOps = ["+", "-", "*", "/", "^", "!"];
 
-  // Shuffle and pick initial two blocked operators
-  const shuffled = shuffle(coreOps.slice(), rand);
-  let blocked = new Set(shuffled.slice(0, 2));
-
   // Get dice and target for the day
   let dice, target;
   if (day < staticPuzzles.length) {
@@ -71,11 +67,15 @@ function getBlockedOperators(day) {
     target = Math.floor(rand() * 100) + 1;
   }
 
-  const onesCount = dice.filter(n => n === 1).length;
-  const factorialBlocked = blocked.has("!");
+  // Step 1: Pick 2 random blocked ops
+  const shuffled = shuffle(coreOps.slice(), rand);
+  let blocked = new Set(shuffled.slice(0, 2));
 
-  // 1. Never block both + and -
+  const onesCount = dice.filter(n => n === 1).length;
+
+  // Rule: + and - can't both be blocked
   if (blocked.has("+") && blocked.has("-")) {
+    // Unblock one randomly
     if (rand() < 0.5) {
       blocked.delete("+");
     } else {
@@ -83,37 +83,52 @@ function getBlockedOperators(day) {
     }
   }
 
-  // 2. If there are two or more 1's, do NOT block factorial
-  if (onesCount >= 2 && factorialBlocked) {
-    blocked.delete("!");
+  // Ensure blocked count stays 2 after above fix
+  while (blocked.size < 2) {
+    const possibleToBlock = coreOps.filter(op => !blocked.has(op));
+    if (possibleToBlock.length === 0) break;
+    const opToBlock = possibleToBlock[Math.floor(rand() * possibleToBlock.length)];
+    blocked.add(opToBlock);
+  }
 
-    // Add a different operator instead to keep exactly two blocked
-    // Pick one from coreOps not currently blocked
-    const allowedToBlock = coreOps.filter(op => !blocked.has(op) && op !== "!");
-    if (allowedToBlock.length > 0) {
-      const opToBlock = allowedToBlock[Math.floor(rand() * allowedToBlock.length)];
+  // Rule: If two or more 1's, factorial must be allowed (not blocked)
+  if (onesCount >= 2 && blocked.has("!")) {
+    blocked.delete("!");
+    // Add another operator to keep count at 2
+    const possibleToBlock = coreOps.filter(op => !blocked.has(op) && op !== "!");
+    if (possibleToBlock.length > 0) {
+      const opToBlock = possibleToBlock[Math.floor(rand() * possibleToBlock.length)];
       blocked.add(opToBlock);
     }
   }
 
-  // 3. If target > 50 and factorial is blocked, ensure ^ is allowed
-  if (target > 50 && factorialBlocked && blocked.has("^")) {
-    blocked.delete("^");
+  // Ensure + and - are still not both blocked after the last change
+  if (blocked.has("+") && blocked.has("-")) {
+    // Unblock one randomly
+    if (rand() < 0.5) {
+      blocked.delete("+");
+    } else {
+      blocked.delete("-");
+    }
   }
 
-  // 4. If all dice ≤ 3, ensure at least one of *, ^, ! is allowed
-  const allDiceLE3 = dice.every(n => n <= 3);
-  if (allDiceLE3) {
-    const opsToCheck = ["*", "^", "!"];
-    const blockedOps = opsToCheck.filter(op => blocked.has(op));
-    if (blockedOps.length === opsToCheck.length) {
-      const toUnblock = opsToCheck[Math.floor(rand() * opsToCheck.length)];
-      blocked.delete(toUnblock);
-    }
+  // Final ensure blocked count is 2
+  while (blocked.size < 2) {
+    const possibleToBlock = coreOps.filter(op => !blocked.has(op));
+    if (possibleToBlock.length === 0) break;
+    const opToBlock = possibleToBlock[Math.floor(rand() * possibleToBlock.length)];
+    blocked.add(opToBlock);
+  }
+  while (blocked.size > 2) {
+    // Remove random blocked operators until size is 2
+    const blockedArr = Array.from(blocked);
+    const toRemove = blockedArr[Math.floor(rand() * blockedArr.length)];
+    blocked.delete(toRemove);
   }
 
   return Array.from(blocked);
 }
+
 
 
 
