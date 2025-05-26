@@ -326,6 +326,8 @@ function renderGame(day) {
   generatePuzzle(day);
   renderDice();
 
+  buildButtons();
+  
   if (lockedDays[day] && lockedDays[day].expression) {
     expressionBox.innerText = lockedDays[day].expression;
     evaluateExpression();
