@@ -41,19 +41,15 @@ function getDayIndex(date) {
 }
 
 
-function getBlockedOperators(date) {
-  const seed = hashString(date.toISOString().slice(0, 10)); // YYYY-MM-DD
-  const rand = mulberry32(seed);
-  const ops = ["+", "-", "*", "/", "^", "!"];
-
-  // Shuffle ops using Fisher–Yates
-  for (let i = ops.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [ops[i], ops[j]] = [ops[j], ops[i]];
-  }
-
-  return ops.slice(0, 2); // block 2
+function getBlockedOperators(day) {
+  const rand = mulberry32(day + 1); // consistent seed per day
+  const coreOps = ["+", "-", "*", "/", "^", "!"];
+  
+  // Shuffle and pick first 2
+  const shuffled = coreOps.slice().sort(() => rand() - 0.5);
+  return shuffled.slice(0, 2);
 }
+
 
 // Example PRNG and hash
 function mulberry32(a) {
@@ -243,14 +239,11 @@ function evaluateExpression() {
 
 function buildButtons() {
   const allOps = ["+", "-", "*", "/", "^", "!", "(", ")", "Back", "Clear"];
-
-  const today = new Date();
-  const blocked = new Set(getBlockedOperators(today));
-  
+  const blockedOps = getBlockedOperators(currentDay);
   buttonGrid.innerHTML = "";
 
   allOps.forEach(op => {
-    if (blocked.has(op)) return; // ❌ Skip blocked operators
+    if (blockedOps.includes(op)) return; // skip blocked ops
 
     const btn = document.createElement("button");
     btn.innerText = op;
@@ -274,11 +267,13 @@ function buildButtons() {
       } else {
         addToExpression(op);
       }
+
       evaluateExpression();
     };
     buttonGrid.appendChild(btn);
   });
 }
+
 function isLocked(day) {
   return lockedDays[day]?.score === 0;
 }
