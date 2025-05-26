@@ -75,7 +75,6 @@ function getBlockedOperators(day) {
 
   // Rule: + and - can't both be blocked
   if (blocked.has("+") && blocked.has("-")) {
-    // Unblock one randomly
     if (rand() < 0.5) {
       blocked.delete("+");
     } else {
@@ -91,8 +90,8 @@ function getBlockedOperators(day) {
     blocked.add(opToBlock);
   }
 
-  // Rule: If two or more 1's, factorial must be allowed (not blocked)
-  if (onesCount >= 2 && blocked.has("!")) {
+  // Rule: If two or more 1's AND target is > 50, factorial must be allowed
+  if (onesCount >= 2 && target > 50 && blocked.has("!")) {
     blocked.delete("!");
     // Add another operator to keep count at 2
     const possibleToBlock = coreOps.filter(op => !blocked.has(op) && op !== "!");
@@ -102,9 +101,8 @@ function getBlockedOperators(day) {
     }
   }
 
-  // Ensure + and - are still not both blocked after the last change
+  // Re-apply + and - rule in case it was broken
   if (blocked.has("+") && blocked.has("-")) {
-    // Unblock one randomly
     if (rand() < 0.5) {
       blocked.delete("+");
     } else {
@@ -112,7 +110,7 @@ function getBlockedOperators(day) {
     }
   }
 
-  // Final ensure blocked count is 2
+  // Final adjustment to keep size at 2
   while (blocked.size < 2) {
     const possibleToBlock = coreOps.filter(op => !blocked.has(op));
     if (possibleToBlock.length === 0) break;
@@ -120,7 +118,6 @@ function getBlockedOperators(day) {
     blocked.add(opToBlock);
   }
   while (blocked.size > 2) {
-    // Remove random blocked operators until size is 2
     const blockedArr = Array.from(blocked);
     const toRemove = blockedArr[Math.floor(rand() * blockedArr.length)];
     blocked.delete(toRemove);
