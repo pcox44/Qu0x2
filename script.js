@@ -55,7 +55,7 @@ function shuffle(array, rand) {
 
 function getBlockedOperators(day) {
   const rand = mulberry32(day + 1);
-  const coreOps = ["+", "-", "*", "^", "!"]; // Note: removed "/" from here
+  const coreOps = ["+", "-", "*", "^", "!"]; // "/" is never blocked
 
   // Get dice and target for the day
   let dice, target;
@@ -67,34 +67,32 @@ function getBlockedOperators(day) {
     target = Math.floor(rand() * 100) + 1;
   }
 
+  const onesCount = dice.filter(n => n === 1).length;
   const allDiceSmall = dice.every(n => n <= 3);
 
-  // Step 1: Always block either '+' or '-' (but not both)
+  // Step 1: Always block either '+' or '-', not both
   const blockAdd = rand() < 0.5;
   const primaryBlocked = blockAdd ? "+" : "-";
   const blocked = new Set([primaryBlocked]);
 
-  // Step 2: Pick one more to block, excluding '+', '-', and now '/'
+  // Step 2: Block one more (excluding +, -, and /)
   const secondaryCandidates = coreOps.filter(op => op !== primaryBlocked);
   blocked.add(secondaryCandidates[Math.floor(rand() * secondaryCandidates.length)]);
 
-  // Step 3: Special rule — don't block both '^' and '!' when all dice are small
+  // Step 3: Prevent blocking both '^' and '!' if all dice ≤ 3
   if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
-    // Unblock one randomly
     if (rand() < 0.5) {
       blocked.delete("^");
     } else {
       blocked.delete("!");
     }
-
-    // Refill to 2 blocked ops, avoiding +, -, and /
     const refillOptions = coreOps.filter(op => !blocked.has(op) && op !== (blockAdd ? "-" : "+"));
     if (refillOptions.length > 0) {
       blocked.add(refillOptions[Math.floor(rand() * refillOptions.length)]);
     }
   }
 
-  // Final safeguard: exactly 2 blocked ops, not both + and -, and never '/'
+  // Step 4: Safeguards — enforce exactly 2 blocked ops, never both '+' and '-', and never '/'
   while (blocked.size < 2) {
     const options = coreOps.filter(op => !blocked.has(op) && op !== (blockAdd ? "-" : "+"));
     if (options.length === 0) break;
@@ -111,8 +109,18 @@ function getBlockedOperators(day) {
     blocked.delete(toRemove);
   }
 
+  // Step 5: Final tweak — if two or more 1s and target > 40, prefer keeping '!' over '*' or '^'
+  if (onesCount >= 2 && target > 40 && blocked.has("!")) {
+    blocked.delete("!");
+    const replaceOptions = ["*", "^"].filter(op => !blocked.has(op));
+    if (replaceOptions.length > 0) {
+      blocked.add(replaceOptions[Math.floor(rand() * replaceOptions.length)]);
+    }
+  }
+
   return Array.from(blocked);
 }
+
 
 
 
