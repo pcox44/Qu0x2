@@ -109,17 +109,26 @@ function getBlockedOperators(day) {
     blocked.delete(toRemove);
   }
 
-  // Step 5: Final tweak — if two or more 1s and target > 40, prefer keeping '!' over '*' or '^'
+    // Step 5: Final tweak — if two or more 1s and target > 40, prefer keeping '!' over '*' or '^'
   if (onesCount >= 2 && target > 40 && blocked.has("!")) {
     blocked.delete("!");
+
     const replaceOptions = ["*", "^"].filter(op => !blocked.has(op));
     if (replaceOptions.length > 0) {
+      // Add one replacement op
       blocked.add(replaceOptions[Math.floor(rand() * replaceOptions.length)]);
+    }
+
+    // Now ensure blocked size is exactly 2
+    while (blocked.size > 2) {
+      // Remove some op that is NOT '+' or '-'
+      const removable = Array.from(blocked).filter(op => op !== "+" && op !== "-");
+      if (removable.length === 0) break;
+      const toRemove = removable[Math.floor(rand() * removable.length)];
+      blocked.delete(toRemove);
     }
   }
 
-  return Array.from(blocked);
-}
 
 
 
