@@ -67,81 +67,62 @@ function getBlockedOperators(day) {
     target = Math.floor(rand() * 100) + 1;
   }
 
-  // Step 1: Pick 2 random blocked ops
-  const shuffled = shuffle(coreOps.slice(), rand);
-  let blocked = new Set(shuffled.slice(0, 2));
-
   const onesCount = dice.filter(n => n === 1).length;
+  const allDiceSmall = dice.every(n => n <= 3);
 
-  // Rule: + and - can't both be blocked
-  if (blocked.has("+") && blocked.has("-")) {
-    if (rand() < 0.5) {
-      blocked.delete("+");
-    } else {
-      blocked.delete("-");
-    }
-  }
+  // Always block either '+' or '-', but not both
+  const blockAdd = rand() < 0.5;
+  const blocked = new Set([blockAdd ? "+" : "-"]);
 
-  // Ensure blocked count stays 2 after above fix
-  while (blocked.size < 2) {
-    const possibleToBlock = coreOps.filter(op => !blocked.has(op));
-    if (possibleToBlock.length === 0) break;
-    const opToBlock = possibleToBlock[Math.floor(rand() * possibleToBlock.length)];
-    blocked.add(opToBlock);
-  }
+  // Create a pool of remaining operators to choose from
+  const remainingOps = coreOps.filter(op => !blocked.has(op));
 
-  // Rule: If two or more 1's AND target is > 50, factorial must be allowed
+  // Randomly block a second op
+  const opToBlock = remainingOps[Math.floor(rand() * remainingOps.length)];
+  blocked.add(opToBlock);
+
+  // Special rule: If two or more 1's AND target > 50, factorial must be allowed
   if (onesCount >= 2 && target > 50 && blocked.has("!")) {
     blocked.delete("!");
-    // Add another operator to keep count at 2
-    const possibleToBlock = coreOps.filter(op => !blocked.has(op) && op !== "!");
-    if (possibleToBlock.length > 0) {
-      const opToBlock = possibleToBlock[Math.floor(rand() * possibleToBlock.length)];
-      blocked.add(opToBlock);
+
+    // Choose a different operator to block (not '+', '-' or '!')
+    const options = coreOps.filter(op => !blocked.has(op) && op !== "!");
+    if (options.length > 0) {
+      blocked.add(options[Math.floor(rand() * options.length)]);
     }
   }
 
-  // New Rule: If all dice are <= 3, don’t block both ^ and !
-  const allDiceSmall = dice.every(n => n <= 3);
+  // Special rule: If all dice ≤ 3, don’t block both '^' and '!'
   if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
+    // Unblock one randomly
     if (rand() < 0.5) {
       blocked.delete("^");
     } else {
       blocked.delete("!");
     }
 
-    // Add another operator to keep count at 2
-    const possibleToBlock = coreOps.filter(op => !blocked.has(op));
-    if (possibleToBlock.length > 0) {
-      const opToBlock = possibleToBlock[Math.floor(rand() * possibleToBlock.length)];
-      blocked.add(opToBlock);
+    // Refill to 2 blocked ops
+    const options = coreOps.filter(op => !blocked.has(op));
+    if (options.length > 0) {
+      blocked.add(options[Math.floor(rand() * options.length)]);
     }
   }
 
-  // Re-apply + and - rule in case it was broken
-  if (blocked.has("+") && blocked.has("-")) {
-    if (rand() < 0.5) {
-      blocked.delete("+");
-    } else {
-      blocked.delete("-");
-    }
-  }
-
-  // Final adjustment to keep size at 2
+  // Final safeguard to ensure exactly 2 blocked ops
   while (blocked.size < 2) {
-    const possibleToBlock = coreOps.filter(op => !blocked.has(op));
-    if (possibleToBlock.length === 0) break;
-    const opToBlock = possibleToBlock[Math.floor(rand() * possibleToBlock.length)];
-    blocked.add(opToBlock);
+    const options = coreOps.filter(op => !blocked.has(op));
+    if (options.length === 0) break;
+    blocked.add(options[Math.floor(rand() * options.length)]);
   }
   while (blocked.size > 2) {
-    const blockedArr = Array.from(blocked);
-    const toRemove = blockedArr[Math.floor(rand() * blockedArr.length)];
+    const arr = Array.from(blocked);
+    const toRemove = arr[Math.floor(rand() * arr.length)];
     blocked.delete(toRemove);
   }
 
   return Array.from(blocked);
 }
+
 
 
 
