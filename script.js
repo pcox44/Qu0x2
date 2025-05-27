@@ -55,7 +55,7 @@ function shuffle(array, rand) {
 
 function getBlockedOperators(day) {
   const rand = mulberry32(day + 1);
-  const coreOps = ["+", "-", "*", "^", "!"]; // "/" is never blocked
+  const coreOps = ["+", "-", "*", "/", "^", "!"];
 
   // Get dice and target for the day
   let dice, target;
@@ -70,31 +70,43 @@ function getBlockedOperators(day) {
   const onesCount = dice.filter(n => n === 1).length;
   const allDiceSmall = dice.every(n => n <= 3);
 
-  // Step 1: Always block either '+' or '-', not both
+  // Always block either '+' or '-', but not both
   const blockAdd = rand() < 0.5;
   const primaryBlocked = blockAdd ? "+" : "-";
+
+  // Filter out primaryBlocked, the other of +/-, and division "/"
+  const secondaryCandidates = coreOps.filter(
+    op => op !== primaryBlocked && op !== (blockAdd ? "-" : "+") && op !== "/"
+  );
+
   const blocked = new Set([primaryBlocked]);
 
-  // Step 2: Block one more (excluding +, -, and /)
-  const secondaryCandidates = coreOps.filter(op => op !== primaryBlocked);
+  // Add one more random operator from secondaryCandidates
   blocked.add(secondaryCandidates[Math.floor(rand() * secondaryCandidates.length)]);
 
-  // Step 3: Prevent blocking both '^' and '!' if all dice ≤ 3
+  // Small dice rule: don’t block both '^' and '!'
   if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
+    // Unblock one randomly
     if (rand() < 0.5) {
       blocked.delete("^");
     } else {
       blocked.delete("!");
     }
-    const refillOptions = coreOps.filter(op => !blocked.has(op) && op !== (blockAdd ? "-" : "+"));
-    if (refillOptions.length > 0) {
-      blocked.add(refillOptions[Math.floor(rand() * refillOptions.length)]);
+
+    // Replace with valid op that is not +, -, or "/"
+    const fallbackOps = coreOps.filter(
+      op => !blocked.has(op) && op !== (blockAdd ? "-" : "+") && op !== "/"
+    );
+    if (fallbackOps.length > 0) {
+      blocked.add(fallbackOps[Math.floor(rand() * fallbackOps.length)]);
     }
   }
 
-  // Step 4: Safeguards — enforce exactly 2 blocked ops, never both '+' and '-', and never '/'
+  // Final safeguard: ensure exactly 2 blocked ops and never both + and -
   while (blocked.size < 2) {
-    const options = coreOps.filter(op => !blocked.has(op) && op !== (blockAdd ? "-" : "+"));
+    const options = coreOps.filter(
+      op => !blocked.has(op) && op !== (blockAdd ? "-" : "+") && op !== "/"
+    );
     if (options.length === 0) break;
     blocked.add(options[Math.floor(rand() * options.length)]);
   }
@@ -104,30 +116,39 @@ function getBlockedOperators(day) {
     (blocked.has("+") && blocked.has("-")) ||
     blocked.has("/")
   ) {
-    const arr = Array.from(blocked).filter(op => op !== "/");
-    const toRemove = arr[Math.floor(rand() * arr.length)];
+    // Remove some op that is not the primaryBlocked (+ or -), never remove primaryBlocked, never remove division since we don't block it
+    const removable = Array.from(blocked).filter(
+      op => op !== primaryBlocked && op !== "/"
+    );
+    if (removable.length === 0) break;
+    const toRemove = removable[Math.floor(rand() * removable.length)];
     blocked.delete(toRemove);
   }
 
-    // Step 5: Final tweak — if two or more 1s and target > 40, prefer keeping '!' over '*' or '^'
+  // Step 5: If factorial is blocked and there are two or more 1's and target > 40,
+  // unblock factorial and block either * or ^ instead.
   if (onesCount >= 2 && target > 40 && blocked.has("!")) {
     blocked.delete("!");
 
     const replaceOptions = ["*", "^"].filter(op => !blocked.has(op));
     if (replaceOptions.length > 0) {
-      // Add one replacement op
       blocked.add(replaceOptions[Math.floor(rand() * replaceOptions.length)]);
     }
 
-    // Now ensure blocked size is exactly 2
+    // Ensure size remains 2, never removing primaryBlocked
     while (blocked.size > 2) {
-      // Remove some op that is NOT '+' or '-'
-      const removable = Array.from(blocked).filter(op => op !== "+" && op !== "-");
+      const removable = Array.from(blocked).filter(
+        op => op !== primaryBlocked && op !== "/"
+      );
       if (removable.length === 0) break;
       const toRemove = removable[Math.floor(rand() * removable.length)];
       blocked.delete(toRemove);
     }
   }
+
+  return Array.from(blocked);
+}
+
 
 
 
