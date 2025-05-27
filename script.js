@@ -69,46 +69,52 @@ function getBlockedOperators(day) {
 
   const allDiceSmall = dice.every(n => n <= 3);
 
-  // Always block either '+' or '-', but not both
+  // Step 1: Always block either '+' or '-' (not both)
   const blockAdd = rand() < 0.5;
   const primaryBlocked = blockAdd ? "+" : "-";
-  const secondaryCandidates = coreOps.filter(op => op !== primaryBlocked && op !== (blockAdd ? "-" : "+"));
-
   const blocked = new Set([primaryBlocked]);
 
-  // Add one more random operator that isn't the other of '+' or '-'
+  // Step 2: Block one more operator, excluding both '+' and '-'
+  const secondaryCandidates = coreOps.filter(op => op !== "+" && op !== "-");
   blocked.add(secondaryCandidates[Math.floor(rand() * secondaryCandidates.length)]);
 
-  // Small dice rule: don’t block both '^' and '!'
+  // Step 3: Enforce small dice rule — don't block both '^' and '!'
   if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
-    // Unblock one
+    // Unblock one randomly
     if (rand() < 0.5) {
       blocked.delete("^");
     } else {
       blocked.delete("!");
     }
 
-    // Replace with a valid op that is not + or -
-    const fallbackOps = coreOps.filter(op => !blocked.has(op) && op !== (blockAdd ? "-" : "+"));
-    if (fallbackOps.length > 0) {
-      blocked.add(fallbackOps[Math.floor(rand() * fallbackOps.length)]);
+    // Refill to 2 blocked ops (but still exclude the other of '+' or '-')
+    const refillOptions = coreOps.filter(
+      op => !blocked.has(op) && op !== "+" && op !== "-"
+    );
+    if (refillOptions.length > 0) {
+      blocked.add(refillOptions[Math.floor(rand() * refillOptions.length)]);
     }
   }
 
-  // Final safeguard to ensure exactly 2 blocked ops and not both + and -
+  // Final safeguard: ensure exactly 2 blocked ops and not both '+' and '-'
   while (blocked.size < 2) {
-    const options = coreOps.filter(op => !blocked.has(op) && op !== (blockAdd ? "-" : "+"));
+    const options = coreOps.filter(
+      op => !blocked.has(op) && op !== (blockAdd ? "-" : "+")
+    );
     if (options.length === 0) break;
     blocked.add(options[Math.floor(rand() * options.length)]);
   }
-  while (blocked.size > 2 || (blocked.has("+") && blocked.has("-"))) {
-    const arr = Array.from(blocked).filter(op => !(op === "+" && blocked.has("-")) && !(op === "-" && blocked.has("+")));
+
+  // This part is now safe: we never allow both '+' and '-' to enter
+  while (blocked.size > 2) {
+    const arr = Array.from(blocked);
     const toRemove = arr[Math.floor(rand() * arr.length)];
     blocked.delete(toRemove);
   }
 
   return Array.from(blocked);
 }
+
 
 
 
