@@ -67,7 +67,6 @@ function getBlockedOperators(day) {
     target = Math.floor(rand() * 100) + 1;
   }
 
-  const onesCount = dice.filter(n => n === 1).length;
   const allDiceSmall = dice.every(n => n <= 3);
 
   // Always block either '+' or '-', but not both
@@ -80,15 +79,6 @@ function getBlockedOperators(day) {
   // Add one more random operator that isn't the other of '+' or '-'
   blocked.add(secondaryCandidates[Math.floor(rand() * secondaryCandidates.length)]);
 
-  // Factorial fix
-  if (onesCount >= 2 && target > 50 && blocked.has("!")) {
-    blocked.delete("!");
-    const fallbackOps = coreOps.filter(op => !blocked.has(op) && op !== "!" && op !== (blockAdd ? "-" : "+"));
-    if (fallbackOps.length > 0) {
-      blocked.add(fallbackOps[Math.floor(rand() * fallbackOps.length)]);
-    }
-  }
-
   // Small dice rule: don’t block both '^' and '!'
   if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
     // Unblock one
@@ -98,7 +88,7 @@ function getBlockedOperators(day) {
       blocked.delete("!");
     }
 
-    // Replace with valid op that is not + or -
+    // Replace with a valid op that is not + or -
     const fallbackOps = coreOps.filter(op => !blocked.has(op) && op !== (blockAdd ? "-" : "+"));
     if (fallbackOps.length > 0) {
       blocked.add(fallbackOps[Math.floor(rand() * fallbackOps.length)]);
@@ -119,6 +109,7 @@ function getBlockedOperators(day) {
 
   return Array.from(blocked);
 }
+
 
 
 
