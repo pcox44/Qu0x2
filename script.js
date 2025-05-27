@@ -72,56 +72,54 @@ function getBlockedOperators(day) {
 
   // Always block either '+' or '-', but not both
   const blockAdd = rand() < 0.5;
-  const blocked = new Set([blockAdd ? "+" : "-"]);
+  const primaryBlocked = blockAdd ? "+" : "-";
+  const secondaryCandidates = coreOps.filter(op => op !== primaryBlocked && op !== (blockAdd ? "-" : "+"));
 
-  // Create a pool of remaining operators to choose from
-  const remainingOps = coreOps.filter(op => !blocked.has(op));
+  const blocked = new Set([primaryBlocked]);
 
-  // Randomly block a second op
-  const opToBlock = remainingOps[Math.floor(rand() * remainingOps.length)];
-  blocked.add(opToBlock);
+  // Add one more random operator that isn't the other of '+' or '-'
+  blocked.add(secondaryCandidates[Math.floor(rand() * secondaryCandidates.length)]);
 
-  // Special rule: If two or more 1's AND target > 50, factorial must be allowed
+  // Factorial fix
   if (onesCount >= 2 && target > 50 && blocked.has("!")) {
     blocked.delete("!");
-
-    // Choose a different operator to block (not '+', '-' or '!')
-    const options = coreOps.filter(op => !blocked.has(op) && op !== "!");
-    if (options.length > 0) {
-      blocked.add(options[Math.floor(rand() * options.length)]);
+    const fallbackOps = coreOps.filter(op => !blocked.has(op) && op !== "!" && op !== (blockAdd ? "-" : "+"));
+    if (fallbackOps.length > 0) {
+      blocked.add(fallbackOps[Math.floor(rand() * fallbackOps.length)]);
     }
   }
 
-  // Special rule: If all dice ≤ 3, don’t block both '^' and '!'
+  // Small dice rule: don’t block both '^' and '!'
   if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
-    // Unblock one randomly
+    // Unblock one
     if (rand() < 0.5) {
       blocked.delete("^");
     } else {
       blocked.delete("!");
     }
 
-    // Refill to 2 blocked ops
-    const options = coreOps.filter(op => !blocked.has(op));
-    if (options.length > 0) {
-      blocked.add(options[Math.floor(rand() * options.length)]);
+    // Replace with valid op that is not + or -
+    const fallbackOps = coreOps.filter(op => !blocked.has(op) && op !== (blockAdd ? "-" : "+"));
+    if (fallbackOps.length > 0) {
+      blocked.add(fallbackOps[Math.floor(rand() * fallbackOps.length)]);
     }
   }
 
-  // Final safeguard to ensure exactly 2 blocked ops
+  // Final safeguard to ensure exactly 2 blocked ops and not both + and -
   while (blocked.size < 2) {
-    const options = coreOps.filter(op => !blocked.has(op));
+    const options = coreOps.filter(op => !blocked.has(op) && op !== (blockAdd ? "-" : "+"));
     if (options.length === 0) break;
     blocked.add(options[Math.floor(rand() * options.length)]);
   }
-  while (blocked.size > 2) {
-    const arr = Array.from(blocked);
+  while (blocked.size > 2 || (blocked.has("+") && blocked.has("-"))) {
+    const arr = Array.from(blocked).filter(op => !(op === "+" && blocked.has("-")) && !(op === "-" && blocked.has("+")));
     const toRemove = arr[Math.floor(rand() * arr.length)];
     blocked.delete(toRemove);
   }
 
   return Array.from(blocked);
 }
+
 
 
 
