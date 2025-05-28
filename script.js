@@ -283,6 +283,26 @@ function addToExpression(char) {
   evaluateExpression();
 }
 
+function quadrupleFactorial(n) {
+  if (n < 0 || !Number.isInteger(n)) throw "Invalid quadruple factorial";
+  if (n === 0 || n === 1) return 1;
+  let product = 1;
+  for (let i = n; i > 1; i -= 4) {
+    product *= i;
+  }
+  return product;
+}
+
+function quintupleFactorial(n) {
+  if (n < 0 || !Number.isInteger(n)) throw "Invalid quintuple factorial";
+  if (n === 0 || n === 1) return 1;
+  let product = 1;
+  for (let i = n; i > 1; i -= 5) {
+    product *= i;
+  }
+  return product;
+}
+
 function doubleFactorial(n) {
   if (n < 0 || !Number.isInteger(n)) throw "Invalid double factorial";
   if (n === 0 || n === 1) return 1;
@@ -317,21 +337,35 @@ function evaluateExpression() {
   try {
     let replaced = expr;
 
-    // Triple factorial e.g. 5!!! or (2+1)!!!
+    // Quintuple factorial: 5!!!!! or (2+3)!!!!!
+    replaced = replaced.replace(/(\([^)]+\)|\d+)!!!!!/g, (_, val) => {
+      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
+      if (!Number.isInteger(n) || n < 0) throw "Invalid quintuple factorial";
+      return quintupleFactorial(n);
+    });
+
+    // Quadruple factorial: 6!!!! or (3+1)!!!!
+    replaced = replaced.replace(/(\([^)]+\)|\d+)!!!!/g, (_, val) => {
+      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
+      if (!Number.isInteger(n) || n < 0) throw "Invalid quadruple factorial";
+      return quadrupleFactorial(n);
+    });
+
+    // Triple factorial: 5!!! or (2+1)!!!
     replaced = replaced.replace(/(\([^)]+\)|\d+)!!!/g, (_, val) => {
       let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
       if (!Number.isInteger(n) || n < 0) throw "Invalid triple factorial";
       return tripleFactorial(n);
     });
 
-    // Double factorial e.g. 4!! or (3!!)!!
+    // Double factorial: 4!! or (3+1)!!
     replaced = replaced.replace(/(\([^)]+\)|\d+)!!/g, (_, val) => {
       let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
       if (!Number.isInteger(n) || n < 0) throw "Invalid double factorial";
       return doubleFactorial(n);
     });
 
-    // Single factorial e.g. 3! or (4)!
+    // Single factorial: 3! or (4)!
     replaced = replaced.replace(/(\([^)]+\)|\d+)!/g, (_, val) => {
       let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
       if (!Number.isInteger(n) || n < 0) throw "Invalid factorial";
@@ -342,12 +376,12 @@ function evaluateExpression() {
     replaced = replaced.replace(/\^/g, "**");
 
     let result = eval(replaced);
-
     evaluationBox.innerText = result;
   } catch {
     evaluationBox.innerText = "?";
   }
 }
+
 
 function buildButtons() {
   const allOps = ["+", "-", "*", "/", "^", "!", "(", ")", "Back", "Clear"];
