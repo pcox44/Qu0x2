@@ -335,52 +335,19 @@ function evaluateExpression() {
     return;
   }
   try {
-    let replaced = expr;
+    // Optional: Basic validation if you want
+    if (!/^[\d\s+\-*/^().!]+$/.test(expr)) {
+      throw new Error("Invalid characters detected.");
+    }
 
-    // Quintuple factorial: 5!!!!! or (2+3)!!!!!
-    replaced = replaced.replace(/(\([^)]+\)|\d+)!!!!!/g, (_, val) => {
-      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
-      if (!Number.isInteger(n) || n < 0) throw "Invalid quintuple factorial";
-      return quintupleFactorial(n);
-    });
-
-    // Quadruple factorial: 6!!!! or (3+1)!!!!
-    replaced = replaced.replace(/(\([^)]+\)|\d+)!!!!/g, (_, val) => {
-      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
-      if (!Number.isInteger(n) || n < 0) throw "Invalid quadruple factorial";
-      return quadrupleFactorial(n);
-    });
-
-    // Triple factorial: 5!!! or (2+1)!!!
-    replaced = replaced.replace(/(\([^)]+\)|\d+)!!!/g, (_, val) => {
-      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
-      if (!Number.isInteger(n) || n < 0) throw "Invalid triple factorial";
-      return tripleFactorial(n);
-    });
-
-    // Double factorial: 4!! or (3+1)!!
-    replaced = replaced.replace(/(\([^)]+\)|\d+)!!/g, (_, val) => {
-      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
-      if (!Number.isInteger(n) || n < 0) throw "Invalid double factorial";
-      return doubleFactorial(n);
-    });
-
-    // Single factorial: 3! or (4)!
-    replaced = replaced.replace(/(\([^)]+\)|\d+)!/g, (_, val) => {
-      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
-      if (!Number.isInteger(n) || n < 0) throw "Invalid factorial";
-      return factorial(n);
-    });
-
-    // Replace ^ with **
-    replaced = replaced.replace(/\^/g, "**");
-
-    let result = eval(replaced);
+    const result = math.evaluate(expr);
     evaluationBox.innerText = result;
-  } catch {
+  } catch (e) {
     evaluationBox.innerText = "?";
+    console.error("Expression error:", e);
   }
 }
+
 
 
 function buildButtons() {
