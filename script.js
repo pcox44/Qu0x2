@@ -114,15 +114,16 @@ function mulberry32(a) {
 function getHardModeBlockedOperators(day) {
   const rand = mulberry32(day + 2025); // unique seed per day
 
-  // Block one of '+' or '-'
+  // Always block one of + or -
   const first = rand() < 0.5 ? "+" : "-";
 
-  // Block one of '*', '^', or '!'
-  const secondaryOps = ["*", "^", "!"];
-  const second = secondaryOps[Math.floor(rand() * secondaryOps.length)];
+  // Then one of *, ^, or !
+  const others = ["*", "^", "!"];
+  const second = others[Math.floor(rand() * others.length)];
 
   return [first, second];
 }
+
 
 function hashString(str) {
   let hash = 0;
@@ -517,6 +518,7 @@ function buildButtons(day = currentDay, hardMode = false) {
     btn.innerText = op;
     btn.onclick = () => {
       if (isLocked(day)) return;
+
       if (op === "Back") {
         let expr = expressionBox.innerText;
         if (expr.length === 0) return;
@@ -534,11 +536,13 @@ function buildButtons(day = currentDay, hardMode = false) {
       } else {
         addToExpression(op);
       }
+
       evaluateExpression();
     };
     buttonGrid.appendChild(btn);
   });
 }
+
 
 
 function isLocked(day) {
