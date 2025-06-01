@@ -112,20 +112,10 @@ function shuffle(array, rand) {
 
 
 function getBlockedOperators(day) {
-  const rand = mulberry32(day + 1);
-  const coreOps = ["+", "-", "*", "^", "!"]; // '/' is never blocked
-  const pairings = [];
+  const rand = mulberry32(day + 12345); // ensure unique seed per day
+  const coreOps = ["+", "-", "*", "^", "!"]; // never block "/"
 
-  // Generate all valid operator pairs (never both '+' and '-', never both '^' and '!' if dice are small)
-  for (let i = 0; i < coreOps.length; i++) {
-    for (let j = i + 1; j < coreOps.length; j++) {
-      const a = coreOps[i], b = coreOps[j];
-      if ((a === "+" && b === "-") || (a === "-" && b === "+")) continue;
-      pairings.push([a, b]);
-    }
-  }
-
-  // Get dice and target for the day
+  // Get dice and target
   let dice, target;
   if (day < staticPuzzles.length) {
     dice = staticPuzzles[day].dice;
@@ -138,25 +128,33 @@ function getBlockedOperators(day) {
   const onesCount = dice.filter(n => n === 1).length;
   const allDiceSmall = dice.every(n => n <= 3);
 
-  // Shuffle valid pairs with seeded RNG
-  const shuffledPairs = shuffle(pairings.slice(), rand);
+  // Generate all valid operator pairs
+  const validPairs = [];
 
-  for (const [op1, op2] of shuffledPairs) {
-    // Avoid both ^ and ! for small dice
-    if (allDiceSmall && ((op1 === "^" && op2 === "!") || (op1 === "!" && op2 === "^"))) {
-      continue;
+  for (let i = 0; i < coreOps.length; i++) {
+    for (let j = i + 1; j < coreOps.length; j++) {
+      const a = coreOps[i], b = coreOps[j];
+
+      if ((a === "+" && b === "-") || (a === "-" && b === "+")) continue;
+
+      // Small dice check
+      if (allDiceSmall && ((a === "^" && b === "!") || (a === "!" && b === "^"))) continue;
+
+      // Don't block "!" when it's useful
+      if ((a === "!" || b === "!") && onesCount >= 2 && target > 40) continue;
+
+      validPairs.push([a, b]);
     }
-
-    // Special case: if ! is one of them, two 1's, and target > 40 — avoid blocking it
-    if ((op1 === "!" || op2 === "!") && onesCount >= 2 && target > 40) {
-      continue;
-    }
-
-    return [op1, op2];
   }
 
-  // Fallback — block first two allowed
-  return [coreOps[0], coreOps[1]];
+  // Shuffle with seeded randomness
+  for (let i = validPairs.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [validPairs[i], validPairs[j]] = [validPairs[j], validPairs[i]];
+  }
+
+  // Return the first valid shuffled pair
+  return validPairs.length ? validPairs[0] : ["*", "^"];
 }
 
 
