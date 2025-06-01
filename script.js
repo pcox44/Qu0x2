@@ -1,3 +1,4 @@
+
 const expressionBox = document.getElementById("expressionBox");
 const evaluationBox = document.getElementById("evaluationBox");
 const buttonGrid = document.getElementById("buttonGrid");
@@ -542,14 +543,16 @@ function evaluateExpression() {
 }
 
 
-function buildButtons(day) {
+function buildButtons() {
   const allOps = ["+", "-", "*", "/", "^", "!", "(", ")", "Back", "Clear"];
 
-  if (!blockedOperatorsByDay[day]) {
-    blockedOperatorsByDay[day] = getBlockedOperators(day);
+  // Cache blocked ops once per day
+  if (!blockedOperatorsByDay[currentDay]) {
+    blockedOperatorsByDay[currentDay] = getBlockedOperators(currentDay);
   }
 
-  const blockedOps = blockedOperatorsByDay[day];
+  const blockedOps = blockedOperatorsByDay[currentDay];
+
   buttonGrid.innerHTML = "";
 
   allOps.forEach(op => {
@@ -558,7 +561,7 @@ function buildButtons(day) {
     const btn = document.createElement("button");
     btn.innerText = op;
     btn.onclick = () => {
-      if (isLocked(day)) return;
+      if (isLocked(currentDay)) return;
 
       if (op === "Back") {
         let expr = expressionBox.innerText;
@@ -583,7 +586,6 @@ function buildButtons(day) {
     buttonGrid.appendChild(btn);
   });
 }
-
 
 
 function isLocked(day) {
@@ -811,7 +813,7 @@ dropdown.addEventListener("change", (e) => {
 submitBtn.addEventListener("click", submit);
 
 // Initialize buttons, dropdown, and render current game on page load
-buildButtons(day);
+buildButtons();
 populateDropdown();
 renderGame(currentDay);
 
