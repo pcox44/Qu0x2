@@ -11,6 +11,7 @@ const masterScoreBox = document.getElementById("masterScore");
 const gameNumberDate = document.getElementById("gameNumberDate");
 const qu0xAnimation = document.getElementById("qu0xAnimation");
 gameNumberDate.style.display = "none";
+const blockedOperatorsByDay = {};
 
 let diceRolledOnce = false;
 let currentDate = new Date();
@@ -589,41 +590,49 @@ function evaluateExpression() {
 
 
 function buildButtons() {
-const allOps = ["+", "-", "*", "/", "^", "!", "(", ")", "Back", "Clear"];
-const blockedOps = getBlockedOperators(currentDay);
-buttonGrid.innerHTML = "";
+  const allOps = ["+", "-", "*", "/", "^", "!", "(", ")", "Back", "Clear"];
 
-allOps.forEach(op => {
-if (blockedOps.includes(op)) return; // skip blocked ops
+  // Cache blocked ops once per day
+  if (!blockedOperatorsByDay[currentDay]) {
+    blockedOperatorsByDay[currentDay] = getBlockedOperators(currentDay);
+  }
 
-const btn = document.createElement("button");
-btn.innerText = op;
-btn.onclick = () => {
-if (isLocked(currentDay)) return;
+  const blockedOps = blockedOperatorsByDay[currentDay];
 
-if (op === "Back") {
-let expr = expressionBox.innerText;
-if (expr.length === 0) return;
-const removed = expr[expr.length - 1];
-expressionBox.innerText = expr.slice(0, -1);
-const idx = usedDice.findLast(i => diceValues[i].toString() === removed);
-if (idx !== undefined) {
-usedDice = usedDice.filter(i => i !== idx);
-document.querySelector(`.die[data-index="${idx}"]`).classList.remove("faded");
+  buttonGrid.innerHTML = "";
+
+  allOps.forEach(op => {
+    if (blockedOps.includes(op)) return;
+
+    const btn = document.createElement("button");
+    btn.innerText = op;
+    btn.onclick = () => {
+      if (isLocked(currentDay)) return;
+
+      if (op === "Back") {
+        let expr = expressionBox.innerText;
+        if (expr.length === 0) return;
+        const removed = expr[expr.length - 1];
+        expressionBox.innerText = expr.slice(0, -1);
+        const idx = usedDice.findLast(i => diceValues[i].toString() === removed);
+        if (idx !== undefined) {
+          usedDice = usedDice.filter(i => i !== idx);
+          document.querySelector(`.die[data-index="${idx}"]`).classList.remove("faded");
+        }
+      } else if (op === "Clear") {
+        expressionBox.innerText = "";
+        usedDice = [];
+        renderDice();
+      } else {
+        addToExpression(op);
+      }
+
+      evaluateExpression();
+    };
+    buttonGrid.appendChild(btn);
+  });
 }
-} else if (op === "Clear") {
-expressionBox.innerText = "";
-usedDice = [];
-renderDice();
-} else {
-addToExpression(op);
-}
 
-evaluateExpression();
-};
-buttonGrid.appendChild(btn);
-});
-}
 
 function isLocked(day) {
 return lockedDays[day]?.score === 0;
