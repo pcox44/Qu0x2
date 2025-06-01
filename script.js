@@ -99,20 +99,31 @@ function getRandomCelebrationEmojis() {
 }
 
 function shuffle(array, rand) {
-let m = array.length, t, i;
-while (m) {
-i = Math.floor(rand() * m--);
-t = array[m];
-array[m] = array[i];
-array[i] = t;
+  let m = array.length, t, i;
+  while (m) {
+    i = Math.floor(rand() * m--);
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+  }
+  return array;
 }
-return array;
-}
+
 
 
 function getBlockedOperators(day) {
   const rand = mulberry32(day + 1);
-  const coreOps = ["+", "-", "*", "/", "^", "!"];
+  const coreOps = ["+", "-", "*", "^", "!"]; // '/' is never blocked
+  const pairings = [];
+
+  // Generate all valid operator pairs (never both '+' and '-', never both '^' and '!' if dice are small)
+  for (let i = 0; i < coreOps.length; i++) {
+    for (let j = i + 1; j < coreOps.length; j++) {
+      const a = coreOps[i], b = coreOps[j];
+      if ((a === "+" && b === "-") || (a === "-" && b === "+")) continue;
+      pairings.push([a, b]);
+    }
+  }
 
   // Get dice and target for the day
   let dice, target;
@@ -127,55 +138,27 @@ function getBlockedOperators(day) {
   const onesCount = dice.filter(n => n === 1).length;
   const allDiceSmall = dice.every(n => n <= 3);
 
-  // Shuffle a list of operators to pick two from
-  const candidateOps = coreOps.filter(op => op !== "/"); // never block "/"
-  const shuffled = shuffle(candidateOps.slice(), rand);
+  // Shuffle valid pairs with seeded RNG
+  const shuffledPairs = shuffle(pairings.slice(), rand);
 
-  let blocked = new Set();
-
-  for (let op of shuffled) {
-    // Avoid blocking both + and -
-    if (
-      (op === "+" && blocked.has("-")) ||
-      (op === "-" && blocked.has("+"))
-    ) {
+  for (const [op1, op2] of shuffledPairs) {
+    // Avoid both ^ and ! for small dice
+    if (allDiceSmall && ((op1 === "^" && op2 === "!") || (op1 === "!" && op2 === "^"))) {
       continue;
     }
-    blocked.add(op);
-    if (blocked.size === 2) break;
-  }
 
-  // If both ^ and ! are blocked and all dice are small, unblock one
-  if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
-    if (rand() < 0.5) blocked.delete("^");
-    else blocked.delete("!");
-
-    // Add another operator to maintain 2 blocked ops
-    for (let op of shuffled) {
-      if (!blocked.has(op) && op !== "/" &&
-          !(op === "+" && blocked.has("-")) &&
-          !(op === "-" && blocked.has("+"))) {
-        blocked.add(op);
-        if (blocked.size === 2) break;
-      }
+    // Special case: if ! is one of them, two 1's, and target > 40 — avoid blocking it
+    if ((op1 === "!" || op2 === "!") && onesCount >= 2 && target > 40) {
+      continue;
     }
+
+    return [op1, op2];
   }
 
-  // Special rule: if ! is blocked and there are two 1s and target > 40, unblock it
-  if (blocked.has("!") && onesCount >= 2 && target > 40) {
-    blocked.delete("!");
-    const replaceOptions = coreOps.filter(op =>
-      !blocked.has(op) && op !== "/" &&
-      !(op === "+" && blocked.has("-")) &&
-      !(op === "-" && blocked.has("+"))
-    );
-    if (replaceOptions.length > 0) {
-      blocked.add(replaceOptions[Math.floor(rand() * replaceOptions.length)]);
-    }
-  }
-
-  return Array.from(blocked);
+  // Fallback — block first two allowed
+  return [coreOps[0], coreOps[1]];
 }
+
 
 
 // Example PRNG and hash
