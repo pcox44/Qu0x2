@@ -111,6 +111,19 @@ function mulberry32(a) {
   }
 }
 
+function getHardModeBlockedOperators(day) {
+  const rand = mulberry32(day + 2025); // unique seed per day
+
+  // Block one of '+' or '-'
+  const first = rand() < 0.5 ? "+" : "-";
+
+  // Block one of '*', '^', or '!'
+  const secondaryOps = ["*", "^", "!"];
+  const second = secondaryOps[Math.floor(rand() * secondaryOps.length)];
+
+  return [first, second];
+}
+
 function hashString(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -484,16 +497,26 @@ function evaluateExpression() {
 }
 
 
-function buildButtons() {
+function buildButtons(day = currentDay, hardMode = false) {
   const ops = ["+", "-", "*", "/", "^", "!", "(", ")", "Back", "Clear"];
   buttonGrid.innerHTML = "";
 
+  let blockedOps = [];
+
+  if (hardMode) {
+    if (!blockedOperatorsByDay[day]) {
+      blockedOperatorsByDay[day] = getHardModeBlockedOperators(day);
+    }
+    blockedOps = blockedOperatorsByDay[day];
+  }
 
   ops.forEach(op => {
+    if (blockedOps.includes(op)) return;
+
     const btn = document.createElement("button");
     btn.innerText = op;
     btn.onclick = () => {
-      if (isLocked(currentDay)) return;
+      if (isLocked(day)) return;
       if (op === "Back") {
         let expr = expressionBox.innerText;
         if (expr.length === 0) return;
@@ -516,6 +539,7 @@ function buildButtons() {
     buttonGrid.appendChild(btn);
   });
 }
+
 
 function isLocked(day) {
   return lockedDays[day]?.score === 0;
@@ -747,7 +771,7 @@ dropdown.addEventListener("change", (e) => {
 submitBtn.addEventListener("click", submit);
 
 // Initialize buttons, dropdown, and render current game on page load
-buildButtons();
+buildButtons(day,true);
 populateDropdown();
 renderGame(currentDay);
 
