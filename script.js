@@ -111,100 +111,72 @@ return array;
 
 
 function getBlockedOperators(day) {
-const rand = mulberry32(day + 1);
-const coreOps = ["+", "-", "*", "/", "^", "!"];
+  const rand = mulberry32(day + 1);
+  const coreOps = ["+", "-", "*", "/", "^", "!"];
 
-// Get dice and target for the day
-let dice, target;
-if (day < staticPuzzles.length) {
-dice = staticPuzzles[day].dice;
-target = staticPuzzles[day].target;
-} else {
-dice = Array.from({ length: 5 }, () => Math.floor(rand() * 6) + 1);
-target = Math.floor(rand() * 100) + 1;
+  // Get dice and target for the day
+  let dice, target;
+  if (day < staticPuzzles.length) {
+    dice = staticPuzzles[day].dice;
+    target = staticPuzzles[day].target;
+  } else {
+    dice = Array.from({ length: 5 }, () => Math.floor(rand() * 6) + 1);
+    target = Math.floor(rand() * 100) + 1;
+  }
+
+  const onesCount = dice.filter(n => n === 1).length;
+  const allDiceSmall = dice.every(n => n <= 3);
+
+  // Shuffle a list of operators to pick two from
+  const candidateOps = coreOps.filter(op => op !== "/"); // never block "/"
+  const shuffled = shuffle(candidateOps.slice(), rand);
+
+  let blocked = new Set();
+
+  for (let op of shuffled) {
+    // Avoid blocking both + and -
+    if (
+      (op === "+" && blocked.has("-")) ||
+      (op === "-" && blocked.has("+"))
+    ) {
+      continue;
+    }
+    blocked.add(op);
+    if (blocked.size === 2) break;
+  }
+
+  // If both ^ and ! are blocked and all dice are small, unblock one
+  if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
+    if (rand() < 0.5) blocked.delete("^");
+    else blocked.delete("!");
+
+    // Add another operator to maintain 2 blocked ops
+    for (let op of shuffled) {
+      if (!blocked.has(op) && op !== "/" &&
+          !(op === "+" && blocked.has("-")) &&
+          !(op === "-" && blocked.has("+"))) {
+        blocked.add(op);
+        if (blocked.size === 2) break;
+      }
+    }
+  }
+
+  // Special rule: if ! is blocked and there are two 1s and target > 40, unblock it
+  if (blocked.has("!") && onesCount >= 2 && target > 40) {
+    blocked.delete("!");
+    const replaceOptions = coreOps.filter(op =>
+      !blocked.has(op) && op !== "/" &&
+      !(op === "+" && blocked.has("-")) &&
+      !(op === "-" && blocked.has("+"))
+    );
+    if (replaceOptions.length > 0) {
+      blocked.add(replaceOptions[Math.floor(rand() * replaceOptions.length)]);
+    }
+  }
+
+  return Array.from(blocked);
 }
 
-const onesCount = dice.filter(n => n === 1).length;
-const allDiceSmall = dice.every(n => n <= 3);
-
-// Always block either '+' or '-', but not both
-const blockAdd = rand() < 0.5;
-const primaryBlocked = blockAdd ? "+" : "-";
-
-// Filter out primaryBlocked, the other of +/-, and division "/"
-const secondaryCandidates = coreOps.filter(
-op => op !== primaryBlocked && op !== (blockAdd ? "-" : "+") && op !== "/"
-);
-
-const blocked = new Set([primaryBlocked]);
-
-// Add one more random operator from secondaryCandidates
-blocked.add(secondaryCandidates[Math.floor(rand() * secondaryCandidates.length)]);
-
-// Small dice rule: don’t block both '^' and '!'
-if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
-// Unblock one randomly
-if (rand() < 0.5) {
-blocked.delete("^");
-} else {
-blocked.delete("!");
-}
-
-// Replace with valid op that is not +, -, or "/"
-const fallbackOps = coreOps.filter(
-op => !blocked.has(op) && op !== (blockAdd ? "-" : "+") && op !== "/"
-);
-if (fallbackOps.length > 0) {
-blocked.add(fallbackOps[Math.floor(rand() * fallbackOps.length)]);
-}
-}
-
-// Final safeguard: ensure exactly 2 blocked ops and never both + and -
-while (blocked.size < 2) {
-const options = coreOps.filter(
-op => !blocked.has(op) && op !== (blockAdd ? "-" : "+") && op !== "/"
-);
-if (options.length === 0) break;
-blocked.add(options[Math.floor(rand() * options.length)]);
-}
-
-while (
-blocked.size > 2 ||
-(blocked.has("+") && blocked.has("-")) ||
-blocked.has("/")
-) {
-// Remove some op that is not the primaryBlocked (+ or -), never remove primaryBlocked, never remove division since we don't block it
-const removable = Array.from(blocked).filter(
-op => op !== primaryBlocked && op !== "/"
-);
-if (removable.length === 0) break;
-const toRemove = removable[Math.floor(rand() * removable.length)];
-blocked.delete(toRemove);
-}
-
-// Step 5: If factorial is blocked and there are two or more 1's and target > 40,
-// unblock factorial and block either * or ^ instead.
-if (onesCount >= 2 && target > 40 && blocked.has("!")) {
-blocked.delete("!");
-
-const replaceOptions = ["*", "^"].filter(op => !blocked.has(op));
-if (replaceOptions.length > 0) {
-blocked.add(replaceOptions[Math.floor(rand() * replaceOptions.length)]);
-}
-
-// Ensure size remains 2, never removing primaryBlocked
-while (blocked.size > 2) {
-const removable = Array.from(blocked).filter(
-op => op !== primaryBlocked && op !== "/"
-);
-if (removable.length === 0) break;
-const toRemove = removable[Math.floor(rand() * removable.length)];
-blocked.delete(toRemove);
-}
-}
-
-return Array.from(blocked);
-}
 
 // Example PRNG and hash
 function mulberry32(a) {
