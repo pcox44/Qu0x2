@@ -38,7 +38,7 @@
 </head>
 <body>
   <div class="top-bar">
-    <h1>Qu0x!+ </h1>
+    <h1>Qu0x!</h1>
   <div id="gameNumberDate"><!-- JS will populate this --></div>  
     <div class="nav-controls">
       <button id="prevDay">◀</button>
@@ -49,9 +49,8 @@
 
 <div class="instructions">
   <ul>
-    <li><strong>Use each of the 5 dice </strong> exactly once to build an expression to get as close as possible to the <strong>target</strong>.</li>
-    <li><strong>Allowed operations:</strong> +, -, <span class="operator">×</span>, <span class="operator">÷</span>, ^ (exponent), ! (factorial). For Qu0x!+, two of these operations are blocked for the day.</li>
-    <li><strong>Score = |Target − Result|.</strong> A score of 0 earns a <span class="qu0x">Qu0x!</span></li>
+    <li>Use all <strong>5 dice</strong> once to match the <strong>Target</strong>. <strong>Tap</strong> dice and buttons to build your expression. Two operations are blocked for Qu0x!+..</li>
+    <li><strong>Score</strong> = |Target − Result|; 0 = <span class="qu0x">Qu0x!</span></li>
   </ul>
 </div>
 
@@ -60,9 +59,9 @@
     <div class="target-box" id="targetBox">Target: ???</div>
   </div>
 
-  <div id="qu0xAnimation" class="hidden">🎉🎉 Qu0x!+ 🎉🎉</div>
+  <div id="qu0xAnimation" class="hidden">Qu0x!</div>
 
-  <button id="shareBtn" class="hidden">Share Your Qu0x!+</button>
+  <button id="shareBtn" class="hidden">Share Your Qu0x!</button>
   
   <div class="dice-container" id="diceContainer"></div>
 
@@ -71,7 +70,7 @@
     <div id="equalsSign">=</div>
     <div id="evaluationBox">?</div>
   </div>
-  
+
   <div class="buttons" id="buttonGrid"></div>
   
 
@@ -79,31 +78,23 @@
     <button id="submitBtn" class="submit">Submit</button>
   </div>
 
+
+  
+  <div class="scoreboard-container">
   <div class="scoreboard">
     <p><strong>Daily Best Score:</strong> <span id="dailyBestScore">N/A</span></p>
     <p><strong>Qu0x!+ Completion:</strong> <span id="completionRatio">0/0</span></p>
     <p><strong>Qu0x!+ Master Score:</strong> <span id="masterScore">N/A</span></p>
   </div>
+  </div>
 
- <button
-  onclick="window.open('https://pcox44.github.io/Qu0x/', '_blank')"
-  style="margin: 10px; padding: 10px 20px; font-size: 1.1em; background-color: grey; color: #fff; border-radius: 8px; border: 2px solid black; cursor: pointer;">
-  Play Qu0x!
-</button>
+   <div class="game-links">
+  <button onclick="window.open('https://pcox44.github.io/Qu0x2/', '_blank')">Play Qu0x!+</button>
+  <button onclick="window.open('https://pcox44.github.io/Qu0x100', '_blank')">Play Qu0x!100</button>
+  </div>
 
 
- 
-<button
-  onclick="window.open('https://pcox44.github.io/Qu0x100', '_blank')"
-  style="background-color: hotpink; color: white; padding: 12px 24px; font-size: 1.1em; border: 2px solid black; border-radius: 8px; cursor: pointer;">
-  Play Qu0x!100
-</button>
-
-  <button
-  onclick="window.open('https://pcox44.github.io/Qu0x-Deluxe', '_blank')"
-  style="background-color: maroon; color: white; padding: 12px 24px; font-size: 1.1em; border: 2px solid black; border-radius: 8px; cursor: pointer;">
-  Play Qu0x! Deluxe
-</button>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <script src="script.js"></script>
 </body>
