@@ -542,16 +542,14 @@ function evaluateExpression() {
 }
 
 
-function buildButtons() {
+function buildButtons(day) {
   const allOps = ["+", "-", "*", "/", "^", "!", "(", ")", "Back", "Clear"];
 
-  // Cache blocked ops once per day
-  if (!blockedOperatorsByDay[currentDay]) {
-    blockedOperatorsByDay[currentDay] = getBlockedOperators(currentDay);
+  if (!blockedOperatorsByDay[day]) {
+    blockedOperatorsByDay[day] = getBlockedOperators(day);
   }
 
-  const blockedOps = blockedOperatorsByDay[currentDay];
-
+  const blockedOps = blockedOperatorsByDay[day];
   buttonGrid.innerHTML = "";
 
   allOps.forEach(op => {
@@ -560,7 +558,7 @@ function buildButtons() {
     const btn = document.createElement("button");
     btn.innerText = op;
     btn.onclick = () => {
-      if (isLocked(currentDay)) return;
+      if (isLocked(day)) return;
 
       if (op === "Back") {
         let expr = expressionBox.innerText;
@@ -585,6 +583,7 @@ function buildButtons() {
     buttonGrid.appendChild(btn);
   });
 }
+
 
 
 function isLocked(day) {
@@ -812,7 +811,7 @@ dropdown.addEventListener("change", (e) => {
 submitBtn.addEventListener("click", submit);
 
 // Initialize buttons, dropdown, and render current game on page load
-buildButtons();
+buildButtons(day);
 populateDropdown();
 renderGame(currentDay);
 
