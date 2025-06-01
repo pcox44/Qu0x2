@@ -10,17 +10,17 @@ const completionRatioBox = document.getElementById("completionRatio");
 const masterScoreBox = document.getElementById("masterScore");
 const gameNumberDate = document.getElementById("gameNumberDate");
 const qu0xAnimation = document.getElementById("qu0xAnimation");
+gameNumberDate.style.display = "none";
 
-
+let diceRolledOnce = false;
 let currentDate = new Date();
 let currentDay = getDayIndex(currentDate);
 let maxDay = getDayIndex(new Date());
 let usedDice = [];
 let diceValues = [];
 let target = null;
-let lockedDays = JSON.parse(localStorage.getItem("QLockedDays") || "{}");
-let bestScores = JSON.parse(localStorage.getItem("QBestScores") || "{}");
-
+let lockedDays = JSON.parse(localStorage.getItem("lockedDays") || "{}");
+let bestScores = JSON.parse(localStorage.getItem("bestScores") || "{}");
 
 const colorBoxes = {
   "1": "🟥", // red box for 1
@@ -42,126 +42,168 @@ function getDayIndex(date) {
 }
 
 
-function shuffle(array, rand) {
-  let m = array.length, t, i;
-  while (m) {
-    i = Math.floor(rand() * m--);
-    t = array[m];
-    array[m] = array[i];
-    array[i] = t;
-  }
-  return array;
+const celebrationEmojis = [
+  '🎉','🎊','💥','✨','🔥','🌟','🎯','🏆','💫','🧨',
+  '👏','🙌','👍','🤝','💪','🙏','👐','✌️','🤘','🤩',
+  '🥳','😄','😁','😸','😺','😻','😹','😊','😃','😆',
+  '💖','💙','💛','💜','🧡','💚','🖤','🤍','❤️‍🔥','❤️',
+  '💓','💗','💘','💝','💞','💟','❣️','💌','🫶','🐱',
+  '🐶','🐭','🐹','🐰','🐻','🐼','🐨','🐯','🦁','🐮',
+  '🐷','🐥','🐣','🐤','🐦','🐧','🐸','🦊','🦄','🐲',
+  '🦕','🧚','🧞','🧝','🧙','🧜','🧟','🦸','🦹','🪄',
+  '🧿','🌈','🌠','🌌','🔮','🕹️','🎮','🎲','🧩','🎼',
+  '🎹','🥁','🎸','🎤','🎧','📯','🎬','🎭','🎨','🎟️',
+  '🎫','🎠','🎡','🎢','🌸','🌺','🌼','🌻','🌹','🍀',
+  '🌞','🌅','🌄','🌤','☀️','⛅','❄️','⛄','🌷','🌱',
+  '🪴','🐚','🌊','🍕','🍔','🍟','🍗','🍿','🍩','🍪',
+  '🧁','🍰','🎂','🍫','🍬','🍭','🍮','🍧','🍨','🍦',
+  '🍓','🍉','🍒','🍹','🍸','🧃','🥂','🍾','🥤','🧋',
+  '🧉','☕','🍵','🍼','🥛','🍺','🍻','🧊','🫗','🍶',
+  '🍷','🎤','🎧','🎷','🎺','🎻','🎵','🎶','🚀','🛸',
+  '✈️','🚁','🚲','🛴','🛵','🏎️','🛹','🛶','🚤','🚂',
+  '🚉','🚄','🏁','🗺️','🗽','🧭','⛵','📣','📯','🗣️',
+  '💬','🔊','📢','💡','🧠','📸','🎥','🎁','🎈','📦',
+  '🪅','🪩','🎇','🎆','🪙',
+  // 100+ more funny, celebratory, and quirky emojis:
+  '🤣','😂','😜','😝','😛','🤪','😎','🤓','🧐','😇',
+  '🥸','🤠','🥳','😺','😸','🙀','😹','😻','🤡','👻',
+  '💩','👽','🤖','🎃','😈','👿','🤥','🦄','🦥','🦦',
+  '🦨','🦩','🐙','🐢','🐉','🐬','🐳','🐋','🦀','🦑',
+  '🍄','🌵','🎃','🍉','🍇','🍊','🍋','🍌','🍍','🥥',
+  '🥝','🥑','🥒','🌽','🥕','🥔','🍠','🥐','🍞','🥖',
+  '🧀','🥨','🥯','🥞','🧇','🥓','🥩','🍗','🍖','🌭',
+  '🍔','🍟','🍕','🌮','🌯','🥙','🧆','🥗','🍿','🧈',
+  '🍩','🍪','🎂','🍰','🍫','🍬','🍭','🍡','🍧','🍨',
+  '🥤','🧃','🍺','🍻','🥂','🍷','🍸','🍹','🍾','🍶',
+  '🧉','☕','🍵','🥄','🍴','🥢','🥡','🧁','🍦','🍰',
+  '🎉','🥳','🎊','🎈','🎆','🎇','✨','💥','💫','🌟',
+  '🎭','🎨','🎬','🎤','🎧','🎼','🎹','🎷','🎺','🎸',
+  '🎻','🥁','🪕','🛸','🚀','🛹','🚲','🛴','🛵','🏎️',
+  '🚁','✈️','🚂','🚢','🛥️','⛵','🚤','🛶','🚗','🚙',
+  '🚕','🚓','🚑','🚒','🚐','🚚','🚛','🚜','🏍️','🛺',
+  '🤹','🧙‍♂️','🧙‍♀️','🧛‍♂️','🧛‍♀️','🧟‍♂️','🧟‍♀️','🧞‍♂️','🧞‍♀️','🧜‍♂️',
+  '🧜‍♀️','🧚‍♂️','🧚‍♀️','👯‍♂️','👯‍♀️','🕺','💃','👯','🤸‍♂️','🤸‍♀️',
+  '🤾‍♂️','🤾‍♀️','🏄‍♂️','🏄‍♀️','🚣‍♂️','🚣‍♀️','🏊‍♂️','🏊‍♀️','🤽‍♂️','🤽‍♀️',
+  '🏋️‍♂️','🏋️‍♀️','🚴‍♂️','🚴‍♀️','🚵‍♂️','🚵‍♀️','🤹‍♂️','🤹‍♀️','🤺','🤼‍♂️',
+  '🤼‍♀️','🤽','🤾','🤸','🤹','🧗‍♂️','🧗‍♀️','🛼','🛷','⛸️',
+  '🎿','🏂','🪂','🥌','⛷️','🏋️','🏋️‍♂️','🏋️‍♀️','🧘‍♂️','🧘‍♀️',
+  '🏇','⛳','🏆','🥇','🥈','🥉','🏅','🎖️','🏵️','🎗️'
+];
+
+
+function getRandomCelebrationEmojis() {
+  const e1 = celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)];
+  const e2 = celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)];
+  return `${e1}${e2}`;
 }
+
+function shuffle(array, rand) {
+let m = array.length, t, i;
+while (m) {
+i = Math.floor(rand() * m--);
+t = array[m];
+array[m] = array[i];
+array[i] = t;
+}
+return array;
+}
+
 
 function getBlockedOperators(day) {
-  const rand = mulberry32(day + 1);
-  const coreOps = ["+", "-", "*", "/", "^", "!"];
+const rand = mulberry32(day + 1);
+const coreOps = ["+", "-", "*", "/", "^", "!"];
 
-  // Get dice and target for the day
-  let dice, target;
-  if (day < staticPuzzles.length) {
-    dice = staticPuzzles[day].dice;
-    target = staticPuzzles[day].target;
-  } else {
-    dice = Array.from({ length: 5 }, () => Math.floor(rand() * 6) + 1);
-    target = Math.floor(rand() * 100) + 1;
-  }
-
-  const onesCount = dice.filter(n => n === 1).length;
-  const allDiceSmall = dice.every(n => n <= 3);
-
-  // Always block either '+' or '-', but not both
-  const blockAdd = rand() < 0.5;
-  const primaryBlocked = blockAdd ? "+" : "-";
-
-  // Filter out primaryBlocked, the other of +/-, and division "/"
-  const secondaryCandidates = coreOps.filter(
-    op => op !== primaryBlocked && op !== (blockAdd ? "-" : "+") && op !== "/"
-  );
-
-  const blocked = new Set([primaryBlocked]);
-
-  // Add one more random operator from secondaryCandidates
-  blocked.add(secondaryCandidates[Math.floor(rand() * secondaryCandidates.length)]);
-
-  // Small dice rule: don’t block both '^' and '!'
-  if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
-    // Unblock one randomly
-    if (rand() < 0.5) {
-      blocked.delete("^");
-    } else {
-      blocked.delete("!");
-    }
-
-    // Replace with valid op that is not +, -, or "/"
-    const fallbackOps = coreOps.filter(
-      op => !blocked.has(op) && op !== (blockAdd ? "-" : "+") && op !== "/"
-    );
-    if (fallbackOps.length > 0) {
-      blocked.add(fallbackOps[Math.floor(rand() * fallbackOps.length)]);
-    }
-  }
-
-  // Final safeguard: ensure exactly 2 blocked ops and never both + and -
-  while (blocked.size < 2) {
-    const options = coreOps.filter(
-      op => !blocked.has(op) && op !== (blockAdd ? "-" : "+") && op !== "/"
-    );
-    if (options.length === 0) break;
-    blocked.add(options[Math.floor(rand() * options.length)]);
-  }
-
-  while (
-    blocked.size > 2 ||
-    (blocked.has("+") && blocked.has("-")) ||
-    blocked.has("/")
-  ) {
-    // Remove some op that is not the primaryBlocked (+ or -), never remove primaryBlocked, never remove division since we don't block it
-    const removable = Array.from(blocked).filter(
-      op => op !== primaryBlocked && op !== "/"
-    );
-    if (removable.length === 0) break;
-    const toRemove = removable[Math.floor(rand() * removable.length)];
-    blocked.delete(toRemove);
-  }
-
-  // Step 5: If factorial is blocked and there are two or more 1's and target > 40,
-  // unblock factorial and block either * or ^ instead.
-  if (onesCount >= 2 && target > 40 && blocked.has("!")) {
-    blocked.delete("!");
-
-    const replaceOptions = ["*", "^"].filter(op => !blocked.has(op));
-    if (replaceOptions.length > 0) {
-      blocked.add(replaceOptions[Math.floor(rand() * replaceOptions.length)]);
-    }
-
-    // Ensure size remains 2, never removing primaryBlocked
-    while (blocked.size > 2) {
-      const removable = Array.from(blocked).filter(
-        op => op !== primaryBlocked && op !== "/"
-      );
-      if (removable.length === 0) break;
-      const toRemove = removable[Math.floor(rand() * removable.length)];
-      blocked.delete(toRemove);
-    }
-  }
-
-  return Array.from(blocked);
+// Get dice and target for the day
+let dice, target;
+if (day < staticPuzzles.length) {
+dice = staticPuzzles[day].dice;
+target = staticPuzzles[day].target;
+} else {
+dice = Array.from({ length: 5 }, () => Math.floor(rand() * 6) + 1);
+target = Math.floor(rand() * 100) + 1;
 }
 
+const onesCount = dice.filter(n => n === 1).length;
+const allDiceSmall = dice.every(n => n <= 3);
 
+// Always block either '+' or '-', but not both
+const blockAdd = rand() < 0.5;
+const primaryBlocked = blockAdd ? "+" : "-";
 
+// Filter out primaryBlocked, the other of +/-, and division "/"
+const secondaryCandidates = coreOps.filter(
+op => op !== primaryBlocked && op !== (blockAdd ? "-" : "+") && op !== "/"
+);
 
+const blocked = new Set([primaryBlocked]);
 
+// Add one more random operator from secondaryCandidates
+blocked.add(secondaryCandidates[Math.floor(rand() * secondaryCandidates.length)]);
 
+// Small dice rule: don’t block both '^' and '!'
+if (allDiceSmall && blocked.has("^") && blocked.has("!")) {
+// Unblock one randomly
+if (rand() < 0.5) {
+blocked.delete("^");
+} else {
+blocked.delete("!");
+}
 
+// Replace with valid op that is not +, -, or "/"
+const fallbackOps = coreOps.filter(
+op => !blocked.has(op) && op !== (blockAdd ? "-" : "+") && op !== "/"
+);
+if (fallbackOps.length > 0) {
+blocked.add(fallbackOps[Math.floor(rand() * fallbackOps.length)]);
+}
+}
 
+// Final safeguard: ensure exactly 2 blocked ops and never both + and -
+while (blocked.size < 2) {
+const options = coreOps.filter(
+op => !blocked.has(op) && op !== (blockAdd ? "-" : "+") && op !== "/"
+);
+if (options.length === 0) break;
+blocked.add(options[Math.floor(rand() * options.length)]);
+}
 
+while (
+blocked.size > 2 ||
+(blocked.has("+") && blocked.has("-")) ||
+blocked.has("/")
+) {
+// Remove some op that is not the primaryBlocked (+ or -), never remove primaryBlocked, never remove division since we don't block it
+const removable = Array.from(blocked).filter(
+op => op !== primaryBlocked && op !== "/"
+);
+if (removable.length === 0) break;
+const toRemove = removable[Math.floor(rand() * removable.length)];
+blocked.delete(toRemove);
+}
 
+// Step 5: If factorial is blocked and there are two or more 1's and target > 40,
+// unblock factorial and block either * or ^ instead.
+if (onesCount >= 2 && target > 40 && blocked.has("!")) {
+blocked.delete("!");
 
+const replaceOptions = ["*", "^"].filter(op => !blocked.has(op));
+if (replaceOptions.length > 0) {
+blocked.add(replaceOptions[Math.floor(rand() * replaceOptions.length)]);
+}
 
+// Ensure size remains 2, never removing primaryBlocked
+while (blocked.size > 2) {
+const removable = Array.from(blocked).filter(
+op => op !== primaryBlocked && op !== "/"
+);
+if (removable.length === 0) break;
+const toRemove = removable[Math.floor(rand() * removable.length)];
+blocked.delete(toRemove);
+}
+}
 
-
+return Array.from(blocked);
+}
 
 // Example PRNG and hash
 function mulberry32(a) {
@@ -228,23 +270,83 @@ function generatePuzzle(day) {
 function renderDice() {
   diceContainer.innerHTML = "";
   usedDice = [];
-  diceValues.forEach((val, idx) => {
-    const die = document.createElement("div");
-    die.className = "die";
-    die.dataset.index = idx;
-    die.dataset.value = val;
-    die.innerText = val;
-    styleDie(die, val);
-    die.addEventListener("click", () => {
-      if (!usedDice.includes(idx) && !isLocked(currentDay)) {
-        usedDice.push(idx);
-        die.classList.add("faded");
-        addToExpression(val.toString());
-      }
+
+  if (isLocked(currentDay)) {
+    // Locked day — show dice statically, no animation
+    diceValues.forEach((val, idx) => {
+      const die = document.createElement("div");
+      die.className = "die faded";  // show locked/used visually
+      die.dataset.index = idx;
+      die.innerText = val;
+      styleDie(die, val);
+      diceContainer.appendChild(die);
     });
-    diceContainer.appendChild(die);
-  });
+    return;
+  }
+
+  const isD6 = (document.getElementById("dieTypeDropdown")?.value || "6") === "6";
+
+  if (isD6 && !diceRolledOnce) {
+    // Roll animation only once on page load
+    const dieFaces = [1, 2, 3, 4, 5, 6];
+    const flickerMax = 12;
+    let flickerCount = 0;
+
+    diceValues.forEach((val, idx) => {
+      const die = document.createElement("div");
+      die.className = "die";
+      die.dataset.index = idx;
+      diceContainer.appendChild(die);
+
+      die.addEventListener("click", () => {
+        if (!usedDice.includes(idx) && !isLocked(currentDay)) {
+          usedDice.push(idx);
+          die.classList.add("faded");
+          addToExpression(diceValues[idx].toString());
+        }
+      });
+    });
+
+    const flickerInterval = setInterval(() => {
+      flickerCount++;
+      const diceDivs = diceContainer.querySelectorAll(".die");
+
+      diceDivs.forEach((die, idx) => {
+        if (flickerCount < flickerMax) {
+          const randomVal = dieFaces[Math.floor(Math.random() * dieFaces.length)];
+          die.innerText = randomVal;
+          styleDie(die, randomVal);
+        } else {
+          die.innerText = diceValues[die.dataset.index];
+          styleDie(die, diceValues[die.dataset.index]);
+        }
+      });
+
+      if (flickerCount >= flickerMax) {
+        clearInterval(flickerInterval);
+        diceRolledOnce = true;  // mark that rolling is done
+      }
+    }, 100);
+  } else {
+    // Static dice rendering (either non-D6 or after roll already done)
+    diceValues.forEach((val, idx) => {
+      const die = document.createElement("div");
+      die.className = "die";
+      die.dataset.index = idx;
+      die.innerText = val;
+      styleDie(die, val);
+      die.addEventListener("click", () => {
+        if (!usedDice.includes(idx) && !isLocked(currentDay)) {
+          usedDice.push(idx);
+          die.classList.add("faded");
+          addToExpression(val.toString());
+        }
+      });
+      diceContainer.appendChild(die);
+    });
+  }
 }
+
 
 function styleDie(die, val) {
   const styles = {
@@ -259,6 +361,7 @@ function styleDie(die, val) {
   die.style.backgroundColor = style.bg;
   die.style.color = style.fg;
 }
+
 
 function addToExpression(char) {
   const expr = expressionBox.innerText;
@@ -328,6 +431,148 @@ function factorial(n) {
   return n <= 1 ? 1 : n * factorial(n - 1);
 }
 
+function evaluateExpressionSafe(expr) {
+  // Remove spaces for easier parsing
+  expr = expr.replace(/\s+/g, '');
+
+  // Tokenize expression into numbers, operators, factorials, and parentheses
+  // We handle factorials as postfix operators: !, !!, !!!, !!!!, !!!!!
+  
+  // Regex to match tokens: numbers (with decimals), operators, parentheses, factorial sequences
+  const tokenPattern = /(\d|\^|\+|\-|\*|\/|\(|\)|!{1,5})/g;
+  const tokens = expr.match(tokenPattern);
+
+  if (!tokens) throw "Invalid expression";
+
+  let pos = 0;
+
+  function peek() {
+    return tokens[pos];
+  }
+
+  function consume(t) {
+    if (tokens[pos] === t) {
+      pos++;
+      return true;
+    }
+    return false;
+  }
+
+  function expect(t) {
+    if (tokens[pos] === t) {
+      pos++;
+    } else {
+      throw `Expected ${t} but found ${tokens[pos]}`;
+    }
+  }
+
+  // Recursive descent parser with grammar:
+  // expression = term { ('+' | '-') term }
+  // term = factor { ('*' | '/') factor }
+  // factor = power { '^' power }
+  // power = primary { factorial }
+  // factorial = '!' | '!!' | '!!!' | '!!!!' | '!!!!!'
+  // primary = number | '(' expression ')'
+
+  function parseExpression() {
+    let value = parseTerm();
+    while (peek() === '+' || peek() === '-') {
+      const op = tokens[pos++];
+      let right = parseTerm();
+      if (op === '+') value += right;
+      else value -= right;
+    }
+    return value;
+  }
+
+  function parseTerm() {
+    let value = parseFactor();
+    while (peek() === '*' || peek() === '/') {
+      const op = tokens[pos++];
+      let right = parseFactor();
+      if (op === '*') value *= right;
+      else {
+        if (right === 0) throw "Division by zero";
+        value /= right;
+      }
+    }
+    return value;
+  }
+
+  function parseFactor() {
+    let value = parsePower();
+    while (peek() === '^') {
+      pos++; // consume '^'
+      let exponent = parsePower();
+      value = Math.pow(value, exponent);
+    }
+    return value;
+  }
+
+  function parsePower() {
+    let value = parsePrimary();
+
+    // Handle factorial postfix operators
+    while (peek() && /^!{1,5}$/.test(peek())) {
+      const factToken = tokens[pos++];
+      const n = value;
+      if (!Number.isInteger(n) || n < 0) throw "Invalid factorial argument";
+
+      switch (factToken.length) {
+        case 1:
+          value = factorial(n);
+          break;
+        case 2:
+          value = doubleFactorial(n);
+          break;
+        case 3:
+          value = tripleFactorial(n);
+          break;
+        case 4:
+          value = quadrupleFactorial(n);
+          break;
+        case 5:
+          value = quintupleFactorial(n);
+          break;
+        default:
+          throw "Unsupported factorial type";
+      }
+    }
+
+    return value;
+  }
+
+  function parsePrimary() {
+    const current = peek();
+    if (!current) throw "Unexpected end of expression";
+
+    if (current === '(') {
+      pos++;
+      const val = parseExpression();
+      expect(')');
+      return val;
+    }
+
+    // Number
+    if (/^\d+$/.test(current)) {
+      pos++;
+      return Number(current);
+    }
+
+    // Unary minus support could be added here if needed
+
+    throw `Unexpected token: ${current}`;
+  }
+
+  const result = parseExpression();
+
+  if (pos !== tokens.length) {
+    throw "Unexpected input after expression end";
+  }
+
+  return result;
+}
+
 function evaluateExpression() {
   const expr = expressionBox.innerText.trim();
   if (expr.length === 0) {
@@ -335,93 +580,53 @@ function evaluateExpression() {
     return;
   }
   try {
-    let replaced = expr;
-
-    // Quintuple factorial: 5!!!!! or (2+3)!!!!!
-    replaced = replaced.replace(/(\([^)]+\)|\d+)!!!!!/g, (_, val) => {
-      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
-      if (!Number.isInteger(n) || n < 0) throw "Invalid quintuple factorial";
-      return quintupleFactorial(n);
-    });
-
-    // Quadruple factorial: 6!!!! or (3+1)!!!!
-    replaced = replaced.replace(/(\([^)]+\)|\d+)!!!!/g, (_, val) => {
-      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
-      if (!Number.isInteger(n) || n < 0) throw "Invalid quadruple factorial";
-      return quadrupleFactorial(n);
-    });
-
-    // Triple factorial: 5!!! or (2+1)!!!
-    replaced = replaced.replace(/(\([^)]+\)|\d+)!!!/g, (_, val) => {
-      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
-      if (!Number.isInteger(n) || n < 0) throw "Invalid triple factorial";
-      return tripleFactorial(n);
-    });
-
-    // Double factorial: 4!! or (3+1)!!
-    replaced = replaced.replace(/(\([^)]+\)|\d+)!!/g, (_, val) => {
-      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
-      if (!Number.isInteger(n) || n < 0) throw "Invalid double factorial";
-      return doubleFactorial(n);
-    });
-
-    // Single factorial: 3! or (4)!
-    replaced = replaced.replace(/(\([^)]+\)|\d+)!/g, (_, val) => {
-      let n = Number.isNaN(Number(val)) ? eval(val) : Number(val);
-      if (!Number.isInteger(n) || n < 0) throw "Invalid factorial";
-      return factorial(n);
-    });
-
-    // Replace ^ with **
-    replaced = replaced.replace(/\^/g, "**");
-
-    let result = eval(replaced);
+    const result = evaluateExpressionSafe(expr);
     evaluationBox.innerText = result;
-  } catch {
+  } catch (e) {
     evaluationBox.innerText = "?";
   }
 }
 
 
 function buildButtons() {
-  const allOps = ["+", "-", "*", "/", "^", "!", "(", ")", "Back", "Clear"];
-  const blockedOps = getBlockedOperators(currentDay);
-  buttonGrid.innerHTML = "";
+const allOps = ["+", "-", "*", "/", "^", "!", "(", ")", "Back", "Clear"];
+const blockedOps = getBlockedOperators(currentDay);
+buttonGrid.innerHTML = "";
 
-  allOps.forEach(op => {
-    if (blockedOps.includes(op)) return; // skip blocked ops
+allOps.forEach(op => {
+if (blockedOps.includes(op)) return; // skip blocked ops
 
-    const btn = document.createElement("button");
-    btn.innerText = op;
-    btn.onclick = () => {
-      if (isLocked(currentDay)) return;
+const btn = document.createElement("button");
+btn.innerText = op;
+btn.onclick = () => {
+if (isLocked(currentDay)) return;
 
-      if (op === "Back") {
-        let expr = expressionBox.innerText;
-        if (expr.length === 0) return;
-        const removed = expr[expr.length - 1];
-        expressionBox.innerText = expr.slice(0, -1);
-        const idx = usedDice.findLast(i => diceValues[i].toString() === removed);
-        if (idx !== undefined) {
-          usedDice = usedDice.filter(i => i !== idx);
-          document.querySelector(`.die[data-index="${idx}"]`).classList.remove("faded");
-        }
-      } else if (op === "Clear") {
-        expressionBox.innerText = "";
-        usedDice = [];
-        renderDice();
-      } else {
-        addToExpression(op);
-      }
+if (op === "Back") {
+let expr = expressionBox.innerText;
+if (expr.length === 0) return;
+const removed = expr[expr.length - 1];
+expressionBox.innerText = expr.slice(0, -1);
+const idx = usedDice.findLast(i => diceValues[i].toString() === removed);
+if (idx !== undefined) {
+usedDice = usedDice.filter(i => i !== idx);
+document.querySelector(`.die[data-index="${idx}"]`).classList.remove("faded");
+}
+} else if (op === "Clear") {
+expressionBox.innerText = "";
+usedDice = [];
+renderDice();
+} else {
+addToExpression(op);
+}
 
-      evaluateExpression();
-    };
-    buttonGrid.appendChild(btn);
-  });
+evaluateExpression();
+};
+buttonGrid.appendChild(btn);
+});
 }
 
 function isLocked(day) {
-  return lockedDays[day]?.score === 0;
+return lockedDays[day]?.score === 0;
 }
 
 function submit() {
@@ -444,12 +649,12 @@ function submit() {
   const score = Math.abs(Number(result) - target);
   if (!(currentDay in bestScores) || score < bestScores[currentDay]) {
     bestScores[currentDay] = score;
-    localStorage.setItem("QBestScores", JSON.stringify(bestScores));
+    localStorage.setItem("bestScores", JSON.stringify(bestScores));
   }
 
  if (score === 0) {
   lockedDays[currentDay] = { score, expression: expressionBox.innerText };
-  localStorage.setItem("QLockedDays", JSON.stringify(lockedDays));
+  localStorage.setItem("lockedDays", JSON.stringify(lockedDays));
   animateQu0x();
 
   // ✅ Show the Share button
@@ -460,11 +665,83 @@ function submit() {
 }
 
 function animateQu0x() {
+  const emoji1 = celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)];
+  const emoji2 = celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)];
+  qu0xAnimation.innerText = `${emoji1} Qu0x! ${emoji2}`;
   qu0xAnimation.classList.remove("hidden");
+
+  const discoBalls = [];
+  const numBalls = 4;
+
+  for (let i = 0; i < numBalls; i++) {
+    const discoBall = document.createElement("div");
+    discoBall.innerText = "🪩"; // disco ball emoji
+    discoBall.style.position = "fixed";
+    discoBall.style.top = "-50px";  // start above screen
+    discoBall.style.left = `${20 + i * 20}%`;
+    discoBall.style.fontSize = "48px";
+    discoBall.style.zIndex = 10000;
+    discoBall.style.transition = "top 2s ease-out";
+    discoBall.style.animation = "spin 2s linear infinite";
+    document.body.appendChild(discoBall);
+    discoBalls.push(discoBall);
+  }
+
+  // Drop down after a small delay
+  setTimeout(() => {
+    discoBalls.forEach(ball => {
+      ball.style.top = "100px"; // drop down
+    });
+  }, 50);
+
+  // After 2 seconds (drop duration), move them back up
+  setTimeout(() => {
+    discoBalls.forEach(ball => {
+      ball.style.top = "-50px"; // go back up
+    });
+  }, 2050);
+
+  // Create flame emojis along the bottom
+  const flames = [];
+  const flameCount = 10;
+  for (let i = 0; i < flameCount; i++) {
+    const flame = document.createElement("div");
+    flame.innerText = "🔥";
+    flame.className = "flame-emoji";
+    flame.style.left = `${(i * 10) + 5}%`;
+    flame.style.animationDuration = `${1 + Math.random()}s`;
+    flame.style.animationDelay = `${Math.random()}s`;
+    document.body.appendChild(flame);
+    flames.push(flame);
+  }
+
+  const duration = 4000; // total ms for entire animation
+  const intervalTime = 250;
+  const end = Date.now() + duration;
+
+  const interval = setInterval(() => {
+    if (Date.now() > end) {
+      clearInterval(interval);
+      discoBalls.forEach(ball => ball.remove());
+      flames.forEach(flame => flame.remove());
+      return;
+    }
+    confetti({
+      particleCount: 50 + Math.floor(Math.random() * 50),
+      spread: 60 + Math.random() * 40,
+      origin: { x: Math.random(), y: Math.random() * 0.6 + 0.4 },
+      scalar: 0.8 + Math.random() * 0.7,
+      gravity: 0.3 + Math.random() * 0.4,
+      colors: ['#ff0', '#f0f', '#0ff', '#0f0', '#f00'],
+    });
+  }, intervalTime);
+
   setTimeout(() => {
     qu0xAnimation.classList.add("hidden");
-  }, 3000);
+  }, duration);
 }
+
+
 
 function renderGame(day) {
   currentDay = day;
@@ -472,8 +749,6 @@ function renderGame(day) {
   generatePuzzle(day);
   renderDice();
 
-  buildButtons();
-  
   if (lockedDays[day] && lockedDays[day].expression) {
     expressionBox.innerText = lockedDays[day].expression;
     evaluateExpression();
@@ -584,7 +859,7 @@ document.getElementById("shareBtn").addEventListener("click", () => {
   const expression = expressionBox.innerText;
   const shareableExpr = expressionToShareable(expression);
 
-  const shareText = `Qu0x!+ ${gameNumber}: ${shareableExpr}`;
+  const shareText = `Qu0x! ${gameNumber}: ${shareableExpr}`;
 
   navigator.clipboard.writeText(shareText).then(() => {
     alert("Copied your Qu0x! expression to clipboard!");
