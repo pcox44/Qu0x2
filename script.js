@@ -703,7 +703,6 @@ function renderGame(day) {
     masterScoreBox.innerText = "N/A";
   }
 
-
   const locked = isLocked(day);
 
   expressionBox.style.pointerEvents = locked ? "none" : "auto";
@@ -726,6 +725,9 @@ function renderGame(day) {
   } else {
     shareBtn.classList.add("hidden");
   }
+
+  // ✅ Build buttons with hard mode enabled
+  buildButtons(day, true);
 }
 
 document.getElementById("prevDay").onclick = () => {
@@ -775,7 +777,6 @@ dropdown.addEventListener("change", (e) => {
 submitBtn.addEventListener("click", submit);
 
 // Initialize buttons, dropdown, and render current game on page load
-buildButtons(day,true);
 populateDropdown();
 renderGame(currentDay);
 
